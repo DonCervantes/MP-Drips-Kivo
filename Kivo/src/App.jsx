@@ -7,6 +7,7 @@ import { EscrowModal }       from './components/EscrowModal'
 import { EscrowDrawer }      from './components/EscrowDrawer'
 import { RampPage }          from './components/Ramp/RampPage'
 import { CreateOfferModal }  from './components/CreateOfferModal'
+import { ModalErrorBoundary } from './components/ErrorBoundary'
 import './App.css'
 
 function shortenAddress(addr) {
@@ -278,28 +279,36 @@ export default function App() {
 
       {/* ── RAMP MODAL ── */}
       {showRamp && (
-        <RampPage onClose={() => setShowRamp(false)} />
+        <ModalErrorBoundary onClose={() => setShowRamp(false)}>
+          <RampPage onClose={() => setShowRamp(false)} />
+        </ModalErrorBoundary>
       )}
 
       {/* ── CREAR OFERTA / QR MODAL ── */}
       {showOffer && (
-        <CreateOfferModal onClose={() => setShowOffer(false)} />
+        <ModalErrorBoundary onClose={() => setShowOffer(false)}>
+          <CreateOfferModal onClose={() => setShowOffer(false)} />
+        </ModalErrorBoundary>
       )}
 
       {/* ── ESCROW MODAL ── */}
       {showEscrow && (
-        <EscrowModal
-          walletAddress={walletAddress}
-          onClose={() => setShowEscrow(false)}
-        />
+        <ModalErrorBoundary onClose={() => setShowEscrow(false)}>
+          <EscrowModal
+            walletAddress={walletAddress}
+            onClose={() => setShowEscrow(false)}
+          />
+        </ModalErrorBoundary>
       )}
 
       {/* ── ESCROW DRAWER ── */}
       {showDrawer && (
-        <EscrowDrawer
-          walletAddress={walletAddress}
-          onClose={() => setShowDrawer(false)}
-        />
+        <ModalErrorBoundary onClose={() => setShowDrawer(false)}>
+          <EscrowDrawer
+            walletAddress={walletAddress}
+            onClose={() => setShowDrawer(false)}
+          />
+        </ModalErrorBoundary>
       )}
 
     </div>
