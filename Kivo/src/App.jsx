@@ -1,8 +1,8 @@
-import { useState } from 'react'
 import { ConnectButton } from 'accesly'
 import { useWallet } from './context/WalletContext'
 import { useLanguage } from './context/LanguageContext'
 import { useNetwork } from './context/NetworkContext'
+import { useUI } from './context/UIContext'
 import { EscrowModal }       from './components/EscrowModal'
 import { EscrowDrawer }      from './components/EscrowDrawer'
 import { RampPage }          from './components/Ramp/RampPage'
@@ -34,11 +34,7 @@ export default function App() {
 
   const { lang, setLang, t } = useLanguage()
   const { network, toggleNetwork } = useNetwork()
-
-  const [showEscrow, setShowEscrow] = useState(false)
-  const [showDrawer, setShowDrawer] = useState(false)
-  const [showRamp,   setShowRamp]   = useState(false)
-  const [showOffer,  setShowOffer]  = useState(false)
+  const { activeModal, setActiveModal } = useUI()
 
   const anyError = acceslyError || freighterError
 
@@ -81,14 +77,14 @@ export default function App() {
           {walletAddress && (
             <>
               {network === 'testnet' && (
-                <button className="btn-my-escrows" onClick={() => setShowRamp(true)}>
+                <button className="btn-my-escrows" onClick={() => setActiveModal('ramp')}>
                   {t.nav.ramp}
                 </button>
               )}
-              <button className="btn-my-escrows" onClick={() => setShowOffer(true)}>
+              <button className="btn-my-escrows" onClick={() => setActiveModal('createOffer')}>
                 {t.offer?.navBtn || 'Vender'}
               </button>
-              <button className="btn-my-escrows" onClick={() => setShowDrawer(true)}>
+              <button className="btn-my-escrows" onClick={() => setActiveModal('drawer')}>
                 {t.nav.myEscrows}
               </button>
             </>
@@ -136,7 +132,7 @@ export default function App() {
         <div className="hero-actions">
           {walletAddress ? (
             <>
-              <button className="btn-primary" onClick={() => setShowEscrow(true)}>
+              <button className="btn-primary" onClick={() => setActiveModal('escrow')}>
                 {t.hero.createEscrow}
               </button>
               <div className="connected-badge">
@@ -277,28 +273,28 @@ export default function App() {
       </footer>
 
       {/* ── RAMP MODAL ── */}
-      {showRamp && (
-        <RampPage onClose={() => setShowRamp(false)} />
+      {activeModal === 'ramp' && (
+        <RampPage onClose={() => setActiveModal(null)} />
       )}
 
       {/* ── CREAR OFERTA / QR MODAL ── */}
-      {showOffer && (
-        <CreateOfferModal onClose={() => setShowOffer(false)} />
+      {activeModal === 'createOffer' && (
+        <CreateOfferModal onClose={() => setActiveModal(null)} />
       )}
 
       {/* ── ESCROW MODAL ── */}
-      {showEscrow && (
+      {activeModal === 'escrow' && (
         <EscrowModal
           walletAddress={walletAddress}
-          onClose={() => setShowEscrow(false)}
+          onClose={() => setActiveModal(null)}
         />
       )}
 
       {/* ── ESCROW DRAWER ── */}
-      {showDrawer && (
+      {activeModal === 'drawer' && (
         <EscrowDrawer
           walletAddress={walletAddress}
-          onClose={() => setShowDrawer(false)}
+          onClose={() => setActiveModal(null)}
         />
       )}
 
