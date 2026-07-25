@@ -67,16 +67,9 @@ Puedes verificar transacciones en Stellar Testnet aquí:
 
 ## Configuración
 
-Copia `.env.example` y completa las variables:
-
-```env
-VITE_ETHERFUSE_API_KEY=          # API Key de Etherfuse
-VITE_ETHERFUSE_BASE_URL=         # URL base (default: https://api.sand.etherfuse.com)
-VITE_TRUSTLESS_API_KEY=          # API Key Trustless Work (testnet)
-VITE_TRUSTLESS_API_KEY_MAINNET=  # API Key Trustless Work (mainnet)
-VITE_SUPABASE_URL=               # URL de tu proyecto Supabase
-VITE_SUPABASE_ANON_KEY=          # Anon key de Supabase
-```
+Copia `.env.example` como `.env` y completa las variables necesarias para el
+flujo que quieras ejecutar. La plantilla documenta la configuración de
+Etherfuse, los identificadores de Kivo, Supabase y la red de Stellar.
 
 ---
 
@@ -86,6 +79,9 @@ VITE_SUPABASE_ANON_KEY=          # Anon key de Supabase
 npm install
 npm run dev
 ```
+
+Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para conocer las convenciones de
+código, el proceso de pull requests y el flujo de releases con SemVer.
 
 ---
 
