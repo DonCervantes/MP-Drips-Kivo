@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useEscrowFlow } from '../hooks/useEscrowFlow'
 import { useLanguage } from '../context/LanguageContext'
+import { DisputeModal } from './DisputeModal'
 
 const ROLES_KEYS = ['approver', 'serviceProvider', 'releaseSigner', 'disputeResolver', 'receiver', 'platformAddress']
 
@@ -66,6 +67,7 @@ export function EscrowDetailModal({ escrow, walletAddress, onClose, onActionDone
   const remaining      = Math.max(0, totalAmount - currentBalance)
   const [fundAmount, setFundAmount] = useState(String(remaining || totalAmount || ''))
   const [actionDone, setActionDone] = useState(null)
+  const [showDispute, setShowDispute] = useState(false)
 
   const statusKey   = getStatusKey(escrow)
   const statusEntry = d.statusLabels?.[statusKey] ?? { label: statusKey, color: 'status-active' }
@@ -76,6 +78,26 @@ export function EscrowDetailModal({ escrow, walletAddress, onClose, onActionDone
     approved: d.successApproved,
     released: d.successReleased,
   }
+
+  /* ── Determinar si el usuario puede iniciar disputa ── */
+  const roles = escrow?.roles ?? {}
+  const flags = escrow?.flags ?? {}
+  const addr = walletAddress?.toLowerCase() ?? ''
+  const isApprover        = roles.approver?.toLowerCase()        === addr
+  const isServiceProvider = roles.serviceProvider?.toLowerCase() === addr
+  const isDisputeResolver = roles.disputeResolver?.toLowerCase() === addr
+  const isParty = isApprover || isServiceProvider
+  const isActive = !flags.released && !flags.resolved && !flags.disputed
+  const isActiveDispute = flags.disputed && !flags.resolved && !flags.released
+
+  // Determinar qué botón de disputa mostrar (mutuamente excluyentes)
+  const disputeBtn = isActive && isParty
+    ? { className: 'btn-dispute-open', label: t.dispute?.initiateBtn || 'Iniciar Disputa', icon: '⚠' }
+    : isActiveDispute && isDisputeResolver
+    ? { className: 'btn-dispute-open btn-dispute-resolver', label: t.dispute?.resolverPanel || 'Panel del Árbitro', icon: '⚖️' }
+    : isActiveDispute
+    ? { className: 'btn-dispute-open btn-dispute-view', label: t.dispute?.title || 'Ver Disputa', icon: '⚖️' }
+    : null
 
   async function handleFund() {
     await fundEscrow(escrow.contractId, fundAmount, walletAddress)
@@ -185,6 +207,18 @@ export function EscrowDetailModal({ escrow, walletAddress, onClose, onActionDone
                 <CopyIcon />
               </button>
             </div>
+          </div>
+        )}
+
+        {/* ── Botón de disputa ── */}
+        {disputeBtn && (
+          <div className="detail-dispute-row">
+            <button
+              className={disputeBtn.className}
+              onClick={() => setShowDispute(true)}
+            >
+              {disputeBtn.icon} {disputeBtn.label}
+            </button>
           </div>
         )}
 
@@ -302,6 +336,16 @@ export function EscrowDetailModal({ escrow, walletAddress, onClose, onActionDone
         {error && <div className="modal-error">{error}</div>}
 
       </div>
+
+      {/* ── Modal de disputa ── */}
+      {showDispute && (
+        <DisputeModal
+          escrow={escrow}
+          walletAddress={walletAddress}
+          onClose={() => setShowDispute(false)}
+          onActionDone={() => { setShowDispute(false); onActionDone?.() }}
+        />
+      )}
     </div>
   )
 }
