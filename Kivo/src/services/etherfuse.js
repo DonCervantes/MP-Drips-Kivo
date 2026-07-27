@@ -15,10 +15,10 @@ export const USDC_STELLAR_ID =
   'USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'
 
 /** UUID del wallet de la plataforma Kivo registrado en Etherfuse sandbox */
-export const KIVO_WALLET_ID = '5ca25f69-0fc3-4099-8d44-4575b27d15a9'
+export const KIVO_WALLET_ID = import.meta.env.VITE_KIVO_WALLET_ID
 
 /** UUID de la organización Kivo en Etherfuse sandbox */
-export const KIVO_CUSTOMER_ID = 'e6d34608-26b5-4246-89d4-658a227b16ae'
+export const KIVO_CUSTOMER_ID = import.meta.env.VITE_KIVO_CUSTOMER_ID
 
 /** @returns {Promise<any>} */
 async function request(path, options = {}) {
