@@ -274,6 +274,20 @@ export const translations = {
       successStep2: 'Financia el escrow con',
       successStep3: 'Aprueba cuando el vendedor entregue',
     },
+
+    recovery: {
+      tag: 'IMPORTANTE',
+      title: 'Guarda tu clave de recuperación',
+      warning: 'Si pierdes estas claves, perderás acceso permanente a tus fondos. Kivo no puede recuperarlas.',
+      secretKeyLabel: 'Tu clave secreta Stellar',
+      secretKeyHint: 'Guárdala en un lugar seguro, offline. Nunca la compartas.',
+      recoveryKeyLabel: 'Clave de recuperación alternativa',
+      recoveryKeyHint: 'Clave cifrada independiente. Úsala si olvidas tu contraseña.',
+      copy: 'Copiar',
+      copied: '¡Copiado!',
+      confirmCheck: 'He guardado ambas claves en un lugar seguro.',
+      continueBtn: 'Continuar',
+    },
   },
 
   en: {
@@ -537,6 +551,20 @@ export const translations = {
       successStep2: 'Fund the escrow with',
       successStep3: 'Approve when the seller delivers',
     },
+
+    recovery: {
+      tag: 'IMPORTANT',
+      title: 'Save your recovery keys',
+      warning: 'If you lose these keys, you will permanently lose access to your funds. Kivo cannot recover them.',
+      secretKeyLabel: 'Your Stellar secret key',
+      secretKeyHint: 'Store it somewhere safe, offline. Never share it.',
+      recoveryKeyLabel: 'Alternative recovery key',
+      recoveryKeyHint: 'Independent encrypted key. Use it if you forget your password.',
+      copy: 'Copy',
+      copied: 'Copied!',
+      confirmCheck: 'I have saved both keys in a safe place.',
+      continueBtn: 'Continue',
+    },
   },
 
   pt: {
@@ -799,6 +827,20 @@ export const translations = {
       successStep1: 'Escrow implantado na Stellar',
       successStep2: 'Financie o escrow com',
       successStep3: 'Aprove quando o vendedor entregar',
+    },
+
+    recovery: {
+      tag: 'IMPORTANTE',
+      title: 'Salve suas chaves de recuperação',
+      warning: 'Se você perder essas chaves, perderá acesso permanente aos seus fundos. A Kivo não pode recuperá-las.',
+      secretKeyLabel: 'Sua chave secreta Stellar',
+      secretKeyHint: 'Guarde em um lugar seguro, offline. Nunca a compartilhe.',
+      recoveryKeyLabel: 'Chave de recuperação alternativa',
+      recoveryKeyHint: 'Chave criptografada independente. Use-a se esquecer sua senha.',
+      copy: 'Copiar',
+      copied: 'Copiado!',
+      confirmCheck: 'Salvei ambas as chaves em um lugar seguro.',
+      continueBtn: 'Continuar',
     },
   },
 }
