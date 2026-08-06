@@ -2,10 +2,11 @@
  * Cliente HTTP para la API de Etherfuse FX.
  * Authorization usa la API key directamente, sin prefijo "Bearer".
  *
- * Datos reales del sandbox (obtenidos via MCP):
- *  - customerId  : e6d34608-26b5-4246-89d4-658a227b16ae
- *  - walletId    : 5ca25f69-0fc3-4099-8d44-4575b27d15a9  (plataforma Kivo)
- *  - USDC id     : USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
+ * Datos de configuración provistos via variables de entorno (VITE_*):
+ *  - API key    : VITE_ETHERFUSE_API_KEY
+ *  - customerId : VITE_KIVO_CUSTOMER_ID
+ *  - walletId   : VITE_KIVO_WALLET_ID  (plataforma Kivo)
+ *  - USDC id    : USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
  */
 
 const API_KEY  = import.meta.env.VITE_ETHERFUSE_API_KEY
