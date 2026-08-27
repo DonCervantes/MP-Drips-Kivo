@@ -15,7 +15,6 @@ export function EscrowModal({ walletAddress, onClose }) {
   const [form, setForm] = useState({
     title:           '',
     description:     '',
-    milestoneDesc:   '',
     serviceProvider: '',
     receiver:        '',
     disputeResolver: '',
@@ -23,13 +22,66 @@ export function EscrowModal({ walletAddress, onClose }) {
     platformFee:     '1',
   })
 
+  const [milestones, setMilestones] = useState([{ desc: '', amount: '' }])
+
   function handleChange(ev) {
     setForm(prev => ({ ...prev, [ev.target.name]: ev.target.value }))
   }
 
+  function addMilestone() {
+    setMilestones([...milestones, { desc: '', amount: '' }])
+  }
+
+  function removeMilestone(index) {
+    if (milestones.length > 1) {
+      setMilestones(milestones.filter((_, i) => i !== index))
+    }
+  }
+
+  function updateMilestone(index, field, value) {
+    const updated = [...milestones]
+    updated[index][field] = value
+    setMilestones(updated)
+  }
+
+  function getTotalDistributed() {
+    return milestones.reduce((sum, m) => sum + (parseFloat(m.amount) || 0), 0)
+  }
+
+  function getRemainingAmount() {
+    const total = parseFloat(form.amount) || 0
+    const distributed = getTotalDistributed()
+    return Math.max(0, total - distributed)
+  }
+
   async function handleSubmit(ev) {
     ev.preventDefault()
-    await createEscrow(form, walletAddress)
+    
+    // Validar que los milestones tengan descripción y monto
+    const validMilestones = milestones.filter(m => m.desc.trim() && m.amount)
+    if (validMilestones.length === 0) {
+      alert(e.errorNoMilestones || 'Debe agregar al menos un hito con descripción y monto.')
+      return
+    }
+
+    // Validar que el total distribuido coincida con el monto del escrow
+    const totalDistributed = getTotalDistributed()
+    const totalAmount = parseFloat(form.amount)
+    if (Math.abs(totalDistributed - totalAmount) > 0.01) {
+      alert(e.errorMilestoneAmount || `El total de milestones (${totalDistributed.toFixed(2)}) debe coincidir con el monto total (${totalAmount.toFixed(2)}).`)
+      return
+    }
+
+    // Preparar form data con milestones
+    const formWithMilestones = {
+      ...form,
+      milestones: validMilestones.map(m => ({
+        description: m.desc,
+        amount: parseFloat(m.amount)
+      }))
+    }
+
+    await createEscrow(formWithMilestones, walletAddress)
   }
 
   // ── Estado: éxito ────────────────────────────────────────────────────────
@@ -101,14 +153,78 @@ export function EscrowModal({ walletAddress, onClose }) {
             />
           </Field>
 
-          <Field label={e.fieldMilestone} hint={e.fieldMilestoneHint}>
-            <input
-              name="milestoneDesc"
-              placeholder={e.fieldMilestonePlaceholder}
-              value={form.milestoneDesc}
-              onChange={handleChange}
-            />
-          </Field>
+          {/* Milestones dinámicos */}
+          <div className="milestones-section">
+            <div className="milestones-header">
+              <label className="form-label">
+                {e.fieldMilestones || 'Hitos del proyecto'}
+                <span className="form-required">*</span>
+              </label>
+              <button
+                type="button"
+                className="btn-add-milestone"
+                onClick={addMilestone}
+              >
+                + {e.addMilestone || 'Agregar hito'}
+              </button>
+            </div>
+
+            {milestones.map((milestone, index) => (
+              <div key={index} className="milestone-row">
+                <div className="milestone-number">{index + 1}</div>
+                <div className="milestone-inputs">
+                  <input
+                    type="text"
+                    placeholder={e.fieldMilestonePlaceholder || 'Descripción del hito'}
+                    value={milestone.desc}
+                    onChange={ev => updateMilestone(index, 'desc', ev.target.value)}
+                    required
+                  />
+                  <input
+                    type="number"
+                    placeholder="0.00"
+                    min="0.01"
+                    step="0.01"
+                    value={milestone.amount}
+                    onChange={ev => updateMilestone(index, 'amount', ev.target.value)}
+                    required
+                  />
+                </div>
+                {milestones.length > 1 && (
+                  <button
+                    type="button"
+                    className="btn-remove-milestone"
+                    onClick={() => removeMilestone(index)}
+                    aria-label={e.removeMilestone || 'Eliminar hito'}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ))}
+
+            {/* Resumen de distribución */}
+            {form.amount && (
+              <div className="milestones-summary">
+                <div className="summary-row">
+                  <span>{e.totalAmount || 'Monto total'}:</span>
+                  <strong>{parseFloat(form.amount).toFixed(2)} USDC</strong>
+                </div>
+                <div className="summary-row">
+                  <span>{e.distributed || 'Distribuido'}:</span>
+                  <strong className={getTotalDistributed() > parseFloat(form.amount) ? 'text-error' : ''}>
+                    {getTotalDistributed().toFixed(2)} USDC
+                  </strong>
+                </div>
+                <div className="summary-row">
+                  <span>{e.remaining || 'Restante'}:</span>
+                  <strong className={getRemainingAmount() > 0 ? 'text-warning' : 'text-success'}>
+                    {getRemainingAmount().toFixed(2)} USDC
+                  </strong>
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="form-two-col">
             <Field label={e.fieldAmount} required>

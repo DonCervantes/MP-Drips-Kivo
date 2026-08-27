@@ -72,9 +72,12 @@ export function useEscrowFlow() {
           disputeResolver: formData.disputeResolver,
           receiver:        formData.receiver || formData.serviceProvider,
         },
-        milestones: [
-          { description: formData.milestoneDesc || formData.description },
-        ],
+        milestones: formData.milestones && formData.milestones.length > 0
+          ? formData.milestones.map(m => ({
+              description: m.description || m.desc,
+              amount: Number(m.amount)
+            }))
+          : [{ description: formData.milestoneDesc || formData.description }],
         trustline: USDC,
       }
 
