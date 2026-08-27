@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useMyEscrows } from '../hooks/useMyEscrows'
 import { EscrowDetailModal } from './EscrowDetailModal'
+import { ModalErrorBoundary } from './ErrorBoundary'
 import { useLanguage } from '../context/LanguageContext'
 
 // Shortens Stellar public keys (G + 55 chars)
@@ -125,12 +126,14 @@ export function EscrowDrawer({ walletAddress, onClose }) {
 
       {/* ── Modal de detalle ── */}
       {selected && (
-        <EscrowDetailModal
-          escrow={selected}
-          walletAddress={walletAddress}
-          onClose={() => setSelected(null)}
-          onActionDone={() => fetchEscrows(walletAddress)}
-        />
+        <ModalErrorBoundary onClose={() => setSelected(null)}>
+          <EscrowDetailModal
+            escrow={selected}
+            walletAddress={walletAddress}
+            onClose={() => setSelected(null)}
+            onActionDone={() => fetchEscrows(walletAddress)}
+          />
+        </ModalErrorBoundary>
       )}
     </>
   )
