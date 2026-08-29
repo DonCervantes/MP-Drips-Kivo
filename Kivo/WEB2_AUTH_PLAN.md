@@ -256,3 +256,21 @@ El hook necesita recibir `{ loginType, secretKey }` como parámetros o desde con
 9. Modificar `App.jsx`
 10. Probar flujo Web2 completo
 11. Verificar que Freighter sigue funcionando igual (flujo Web3)
+
+---
+
+## Estado de implementación
+
+| Archivo | Estado |
+|---|---|
+| `src/services/supabase.js` | ✅ Implementado |
+| `src/lib/wallet.js` | ✅ Implementado (PR #2) |
+| `src/hooks/useAuth.js` | ✅ Implementado |
+| `src/components/AuthModal.jsx` | ✅ Implementado |
+| `src/components/SeedPhraseModal.jsx` | ✅ Implementado (PR #2) |
+| `src/hooks/useEscrowFlow.js` (firma dual) | ⏳ Pendiente |
+| `src/App.jsx` (usar useAuth) | ⏳ Pendiente |
+
+> Decisión: **Opción A — Implementar el plan**.
+> Los archivos base han sido creados. La integración completa en App.jsx
+> y useEscrowFlow.js se realizará en PRs posteriores.
