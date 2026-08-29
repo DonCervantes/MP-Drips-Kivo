@@ -94,6 +94,7 @@ em     { font-style: normal; color: var(--gold-light); }
   font-weight: 700;
   color: var(--white);
   letter-spacing: -0.3px;
+  text-decoration: none;
 }
 
 .nav-wallet {
@@ -1022,6 +1023,7 @@ h2 {
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s;
   white-space: nowrap;
+  text-decoration: none;
 }
 .btn-my-escrows:hover {
   background: rgba(45,212,191,0.2);
