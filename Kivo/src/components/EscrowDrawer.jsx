@@ -47,9 +47,23 @@ function getRoleKey(escrow, walletAddress) {
  *   walletAddress  string
  *   onClose        () => void
  */
+const STATUS_KEYS = ['active', 'approved', 'disputed', 'resolved', 'released']
+const ROLE_FILTERS = ['sender', 'receiver', 'disputeResolver']
+const SORT_OPTIONS = ['newest', 'oldest']
+
+function getRoleFilterKey(escrow, walletAddress) {
+  const role = getRoleKey(escrow, walletAddress)
+  if (role === 'serviceProvider' || role === 'approver' || role === 'releaseSigner' || role === 'platformAddress') return 'sender'
+  return role
+}
+
 export function EscrowDrawer({ walletAddress, onClose }) {
   const { escrows, loading, error, fetchEscrows } = useMyEscrows()
   const [selected, setSelected] = useState(null)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [roleFilter, setRoleFilter] = useState('all')
+  const [sortOrder, setSortOrder] = useState('newest')
   const { t } = useLanguage()
   const d = t.drawer
 
@@ -57,6 +71,20 @@ export function EscrowDrawer({ walletAddress, onClose }) {
     fetchEscrows(walletAddress)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [walletAddress])
+
+  const filteredEscrows = escrows.filter((e) => {
+    const matchStatus = statusFilter === 'all' || getStatusKey(e) === statusFilter
+    const matchRole = roleFilter === 'all' || getRoleFilterKey(e, walletAddress) === roleFilter
+    const matchSearch = !search || (
+      (e.title || '').toLowerCase().includes(search.toLowerCase()) ||
+      (e.contractId || '').toLowerCase().includes(search.toLowerCase())
+    )
+    return matchStatus && matchRole && matchSearch
+  }).sort((a, b) => {
+    const ta = a.createdAt?._seconds ?? 0
+    const tb = b.createdAt?._seconds ?? 0
+    return sortOrder === 'newest' ? tb - ta : ta - tb
+  })
 
   return (
     <>
@@ -90,6 +118,58 @@ export function EscrowDrawer({ walletAddress, onClose }) {
           <span className="drawer-wallet-addr">{shorten(walletAddress, 8, 6)}</span>
         </div>
 
+        {/* Filters */}
+        {!loading && !error && escrows.length > 0 && (
+          <div className="drawer-filters">
+            <input
+              className="drawer-search"
+              type="text"
+              placeholder={d.searchPlaceholder}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <div className="drawer-filter-row">
+              <div className="drawer-filter-group">
+                <label className="drawer-filter-label">{d.filterStatus}</label>
+                <select
+                  className="drawer-filter-select"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="all">{d.all}</option>
+                  {STATUS_KEYS.map((s) => (
+                    <option key={s} value={s}>{d[`status${s.charAt(0).toUpperCase() + s.slice(1)}`]}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="drawer-filter-group">
+                <label className="drawer-filter-label">{d.filterRole}</label>
+                <select
+                  className="drawer-filter-select"
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                >
+                  <option value="all">{d.roleAll}</option>
+                  <option value="sender">{d.roleSender}</option>
+                  <option value="receiver">{d.roleReceiver}</option>
+                  <option value="disputeResolver">{d.roleResolver}</option>
+                </select>
+              </div>
+              <div className="drawer-filter-group">
+                <label className="drawer-filter-label">{d.filterDate}</label>
+                <select
+                  className="drawer-filter-select"
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value)}
+                >
+                  <option value="newest">{d.dateNewest}</option>
+                  <option value="oldest">{d.dateOldest}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Contenido */}
         <div className="drawer-body">
           {loading && (
@@ -111,7 +191,14 @@ export function EscrowDrawer({ walletAddress, onClose }) {
             </div>
           )}
 
-          {!loading && escrows.map((escrow, i) => (
+          {!loading && !error && escrows.length > 0 && filteredEscrows.length === 0 && (
+            <div className="drawer-empty">
+              <span className="drawer-empty-icon">🔍</span>
+              <p>{d.noResults}</p>
+            </div>
+          )}
+
+          {!loading && filteredEscrows.map((escrow, i) => (
             <EscrowCard
               key={escrow.engagementId || escrow.contractId || i}
               escrow={escrow}

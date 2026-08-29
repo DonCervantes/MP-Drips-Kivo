@@ -1173,6 +1173,73 @@ h2 {
   letter-spacing: 0.04em;
 }
 
+/* ── Filters ── */
+.drawer-filters {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.drawer-search {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.drawer-search:focus {
+  border-color: var(--teal);
+}
+
+.drawer-search::placeholder {
+  color: var(--muted, #888);
+}
+
+.drawer-filter-row {
+  display: flex;
+  gap: 8px;
+}
+
+.drawer-filter-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.drawer-filter-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted, #888);
+  font-weight: 600;
+}
+
+.drawer-filter-select {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.drawer-filter-select:focus {
+  border-color: var(--teal);
+}
+
 /* ── Body scroll ── */
 .drawer-body {
   flex: 1;
