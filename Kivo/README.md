@@ -52,7 +52,6 @@ Kivo es una dApp que permite a usuarios de Latinoamérica crear y gestionar **es
 | Ramp | Etherfuse FX API (sandbox) |
 | Wallet social | Accesly |
 | Wallet browser | Freighter (`@stellar/freighter-api`) |
-| Estado / DB | Supabase |
 | QR | `qrcode.react` |
 
 ---
@@ -69,7 +68,7 @@ Puedes verificar transacciones en Stellar Testnet aquí:
 
 Copia `.env.example` como `.env` y completa las variables necesarias para el
 flujo que quieras ejecutar. La plantilla documenta la configuración de
-Etherfuse, los identificadores de Kivo, Supabase y la red de Stellar.
+Etherfuse, Trustless Work, Accesly y la plataforma Kivo.
 
 ---
 

@@ -1,7 +1,7 @@
 # Contribuir a Kivo
 
-Gracias por tu interes en mejorar Kivo. Esta guia explica como preparar el
-proyecto, mantener el estilo del codigo y proponer cambios.
+Gracias por tu interés en mejorar Kivo. Esta guía explica cómo preparar el
+proyecto, mantener el estilo del código y proponer cambios.
 
 ## Requisitos
 
@@ -12,11 +12,11 @@ proyecto, mantener el estilo del codigo y proponer cambios.
 
 ## Entorno local
 
-1. Clona el repositorio y entra al directorio de la aplicacion:
+1. Clona el repositorio y entra al directorio de la aplicación:
 
    ```bash
    git clone <URL_DEL_REPOSITORIO>
-   cd Kivo-Wave/Kivo
+   cd MP-Drips-Kivo/Kivo
    ```
 
 2. Instala las dependencias:
@@ -25,7 +25,7 @@ proyecto, mantener el estilo del codigo y proponer cambios.
    npm install
    ```
 
-3. Crea tu archivo de configuracion local:
+3. Crea tu archivo de configuración local:
 
    ```bash
    cp .env.example .env
@@ -47,16 +47,16 @@ proyecto, mantener el estilo del codigo y proponer cambios.
    npm run build
    ```
 
-## Convenciones de codigo
+## Convenciones de código
 
-- Usa JavaScript y JSX con modulos ES.
-- Mantiene componentes React en `PascalCase` y hooks con el prefijo `use`.
+- Usa JavaScript y JSX con módulos ES.
+- Mantén componentes React en `PascalCase` y hooks con el prefijo `use`.
 - Usa `camelCase` para variables y funciones, y `UPPER_SNAKE_CASE` para
-  constantes de modulo.
+  constantes de módulo.
 - Sigue el formato existente: comillas simples y sin punto y coma.
 - Coloca componentes reutilizables en `src/components`, hooks en `src/hooks`,
   contextos en `src/context` e integraciones externas en `src/services`.
-- Conserva los textos visibles en los archivos de traduccion cuando una
+- Conserva los textos visibles en los archivos de traducción cuando una
   funcionalidad afecte la interfaz.
 - Evita mezclar refactorizaciones no relacionadas con el objetivo del cambio.
 
@@ -70,24 +70,24 @@ proyecto, mantener el estilo del codigo y proponer cambios.
 
    Prefijos sugeridos: `feat/`, `fix/`, `docs/`, `refactor/` y `chore/`.
 
-2. Haz commits pequenos y descriptivos, preferentemente con el formato
+2. Haz commits pequeños y descriptivos, preferentemente con el formato
    Conventional Commits, por ejemplo `feat: agrega filtro de escrows`.
 
-3. Actualiza la documentacion y las pruebas aplicables junto con el codigo.
+3. Actualiza la documentación y las pruebas aplicables junto con el código.
 
 4. Abre un pull request con:
 
-   - Un resumen del problema y la solucion.
+   - Un resumen del problema y la solución.
    - Pasos claros para verificar el cambio.
    - Capturas o video cuando cambie la interfaz.
    - Referencia al issue relacionado.
 
 5. Confirma que `npm run lint` y `npm run build` pasan antes de solicitar
-   revision.
+   revisión.
 
 ## Versionado y releases
 
-Kivo usa [Versionado Semantico](https://semver.org/lang/es/) con el formato
+Kivo usa [Versionado Semántico](https://semver.org/lang/es/) con el formato
 `MAJOR.MINOR.PATCH`:
 
 - `MAJOR`: cambios incompatibles con versiones anteriores.
@@ -96,7 +96,7 @@ Kivo usa [Versionado Semantico](https://semver.org/lang/es/) con el formato
 
 Proceso de release:
 
-1. Asegura que la rama principal este actualizada y que lint y build pasen.
+1. Asegura que la rama principal esté actualizada y que lint y build pasen.
 2. Determina el incremento SemVer a partir de los cambios incluidos.
 3. Actualiza `package.json` y `package-lock.json` con
    `npm version <major|minor|patch> --no-git-tag-version`.
@@ -104,5 +104,5 @@ Proceso de release:
 5. Integra el cambio, crea un tag anotado `vMAJOR.MINOR.PATCH` y publica el
    release desde ese tag.
 
-No combines un incremento de version con cambios funcionales ajenos al
+No combines un incremento de versión con cambios funcionales ajenos al
 release.
