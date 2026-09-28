@@ -17,6 +17,7 @@ import {
   KIVO_CUSTOMER_ID,
 } from '../services/etherfuse'
 import { useWallet } from '../context/WalletContext'
+import { normalizeOrder, statusFromOrder } from '../utils/orderState'
 
 const POLLING_INTERVAL_MS = 3_000
 const QUOTE_TTL_MS = 120_000
@@ -75,26 +76,6 @@ async function ensureUsdcTrustline(walletAddress, signTransaction) {
 
 function newUUID() {
   return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`
-}
-
-/**
- * Normaliza la respuesta de createOrder.
- * POST /ramp/order devuelve  { onramp: {...} } o { offramp: {...} }
- * GET  /ramp/order/:id devuelve el objeto plano directamente.
- */
-function normalizeOrder(raw) {
-  return raw?.onramp ?? raw?.offramp ?? raw ?? {}
-}
-
-function statusFromOrder(order) {
-  const s = (order?.status ?? '').toLowerCase()
-  if (s === 'completed') return 'completed'
-  if (s === 'failed' || s === 'cancelled') return 'error'
-  if (s === 'funded' || s === 'processing') return 'processing'
-  if (s === 'created') {
-    return order?.depositClabe ? 'awaiting_payment' : 'processing'
-  }
-  return 'processing'
 }
 
 /**
