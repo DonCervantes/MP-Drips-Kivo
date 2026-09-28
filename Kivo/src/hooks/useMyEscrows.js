@@ -3,6 +3,7 @@ import {
   useGetEscrowsFromIndexerBySigner,
   useGetEscrowsFromIndexerByRole,
 } from '@trustless-work/escrow/hooks'
+export { getEscrowStatus } from '../utils/escrowState'
 
 /**
  * Devuelve todos los escrows relacionados con walletAddress,
@@ -89,12 +90,3 @@ export function getMyRole(escrow, walletAddress) {
   return 'Participante'
 }
 
-/** Resuelve el estado visible del escrow a partir de sus flags */
-export function getEscrowStatus(escrow) {
-  const f = escrow?.flags ?? {}
-  if (f.released)  return { label: 'Liberado',    color: 'status-released'  }
-  if (f.resolved)  return { label: 'Resuelto',    color: 'status-resolved'  }
-  if (f.disputed)  return { label: 'En Disputa',  color: 'status-disputed'  }
-  if (f.approved)  return { label: 'Aprobado',    color: 'status-approved'  }
-  return               { label: 'Activo',       color: 'status-active'    }
-}
