@@ -29,11 +29,17 @@ export function EscrowModal({ walletAddress, onClose }) {
 
   async function handleSubmit(ev) {
     ev.preventDefault()
-    await createEscrow(form, walletAddress)
+    try {
+      await createEscrow(form, walletAddress)
+    } catch {
+      // `createEscrow` ya deja el mensaje en `error`; el catch evita la
+      // promesa sin manejar (Issue #51).
+    }
   }
 
   // ── Estado: éxito ────────────────────────────────────────────────────────
-  if (result?.contractId !== undefined) {
+  // Issue #51: solo hay éxito si el Contract ID es real (no null ni vacío).
+  if (result?.contractId) {
     return (
       <ModalOverlay onClose={onClose}>
         <div className="modal-success">

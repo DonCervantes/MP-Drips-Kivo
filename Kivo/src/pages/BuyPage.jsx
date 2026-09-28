@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { ConnectButton } from 'accesly'
 import { useWallet } from '../context/WalletContext'
 import { useLanguage } from '../context/LanguageContext'
@@ -36,27 +36,48 @@ export function BuyPage() {
     disconnectFreighter,
   } = useWallet()
 
-  const { createEscrow, loading, error, result } = useEscrowFlow()
+  const { createEscrow, fundEscrow, loading, error } = useEscrowFlow()
+
+  // Issue #51: solo se muestra la pantalla de éxito tras crear Y fondear el
+  // escrow. `completed` guarda el Contract ID real (nunca null).
+  const [completed, setCompleted] = useState(null)
 
   async function handleBuy() {
-    if (!walletAddress) return
-    await createEscrow(
-      {
-        title,
-        description:     desc,
-        milestoneDesc:   desc,
-        serviceProvider: seller,
-        receiver:        seller,
-        disputeResolver: resolver,
-        amount,
-        platformFee:     '1',
-      },
-      walletAddress,
-    )
+    if (!walletAddress || loading) return
+    setCompleted(null)
+    const payload = {
+      title,
+      description:     desc,
+      milestoneDesc:   desc,
+      serviceProvider: seller,
+      receiver:        seller,
+      disputeResolver: resolver,
+      amount,
+      platformFee:     '1',
+    }
+    let created = null
+    try {
+      created = await createEscrow(payload, walletAddress)
+    } catch {
+      // `createEscrow` ya deja el error en `error`; sin Contract ID lanza y
+      // aquí capturamos para no dejar la promesa sin manejar (Issue #51).
+      return
+    }
+    if (!created?.contractId) return
+
+    // Fondea en el mismo paso: el comprador ve éxito solo si el escrow quedó
+    // financiado. Si la firma falla, `fundEscrow` deja el error en `error` y
+    // no se muestra pantalla de éxito.
+    try {
+      await fundEscrow(created.contractId, amount, walletAddress)
+    } catch {
+      return
+    }
+    setCompleted({ contractId: created.contractId })
   }
 
   /* ── Éxito ── */
-  if (result?.contractId !== undefined) {
+  if (completed) {
     return (
       <div className="app">
         <BuyNav freighterAddr={freighterAddr} freighterLoading={freighterLoading} connectFreighter={connectFreighter} disconnectFreighter={disconnectFreighter} />
@@ -65,10 +86,10 @@ export function BuyPage() {
             <div className="modal-success-icon">✓</div>
             <h2 style={{ marginBottom: '0.5rem' }}>{b.successTitle}</h2>
             <p style={{ color: 'var(--muted)', marginBottom: '1rem' }}>{b.successSub}</p>
-            {result.contractId && (
+            {completed.contractId && (
               <div className="contract-id-box">
                 <span className="contract-label">Contract ID</span>
-                <code className="contract-value">{result.contractId}</code>
+                <code className="contract-value">{completed.contractId}</code>
               </div>
             )}
             <div className="buy-flow-info" style={{ marginTop: '1.25rem' }}>
