@@ -12,7 +12,6 @@
   "dependencies": {
     "@stellar/freighter-api": "^6.0.1",
     "@stellar/stellar-sdk": "^14.6.1",
-    "@supabase/supabase-js": "^2.99.3",
     "@trustless-work/escrow": "^3.0.5",
     "accesly": "^0.2.5",
     "qrcode.react": "^4.2.0",
