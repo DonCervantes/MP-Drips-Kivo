@@ -86,6 +86,13 @@ export function useEscrowFlow() {
       const txResult      = await sendTransaction(signedXdr)
 
       const contractId = txResult?.contractId || txResult?.data?.contractId || null
+      if (!contractId) {
+        // Issue #51: un escrow sin Contract ID no es éxito — no mostrar
+        // pantalla de éxito con `contractId: null`.
+        const msg = 'No se pudo confirmar el Contract ID del escrow. Verifica la transacción e inténtalo de nuevo.'
+        setError(msg)
+        throw new Error(msg)
+      }
       const outcome = { contractId, status: txResult?.status }
       setResult(outcome)
       return outcome

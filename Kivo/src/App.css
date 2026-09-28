@@ -878,6 +878,15 @@ h2 {
   font-size: 13px;
 }
 
+/* Validación de claves Stellar por campo (Issue #50) */
+.form-error {
+  display: block;
+  margin-top: 6px;
+  color: #fca5a5;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 /* ── Actions ── */
 .modal-actions {
   display: flex;
