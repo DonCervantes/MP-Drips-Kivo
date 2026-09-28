@@ -1,5 +1,21 @@
 # Plan: Login Web2 en Kivo (sin wallet)
 
+> ## ⚠️ DESCARTADO / REJECTED
+>
+> **Este plan queda rechazado y no se implementará** (Issue #54).
+>
+> - La **secret key no se genera ni se guarda** en el navegador ni en
+>   **Postgres/Supabase**.
+> - Los PRs [#30](https://github.com/DonCervantes/MP-Drips-Kivo/pull/30) y
+>   [#29](https://github.com/DonCervantes/MP-Drips-Kivo/pull/29) **no deben
+>   mergearse** con este diseño.
+> - La app es 100 % on-chain con Freighter/Accesly; la dependencia
+>   `@supabase/supabase-js` fue eliminada (Issue #45).
+> - El contenido restante de este documento queda **histórico y obsoleto**:
+>   se conserva solo como registro de la decisión.
+
+---
+
 Objetivo: permitir que usuarios sin Freighter ni conocimiento de Web3
 puedan registrarse con **email/password** y usar Kivo normalmente.
 Su wallet Stellar se genera automáticamente, invisible para ellos.
