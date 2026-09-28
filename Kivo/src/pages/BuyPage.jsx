@@ -3,6 +3,7 @@ import { ConnectButton } from 'accesly'
 import { useWallet } from '../context/WalletContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useEscrowFlow } from '../hooks/useEscrowFlow'
+import { isValidPublicKey } from '../lib/validateStellarKeys'
 
 function shortenAddress(addr) {
   if (!addr) return ''
@@ -37,6 +38,11 @@ export function BuyPage() {
   } = useWallet()
 
   const { createEscrow, loading, error, result } = useEscrowFlow()
+
+  // Issue #50: `seller` y `resolver` vienen directo de la URL de la oferta.
+  // Rechazar la compra si no son claves públicas Stellar Ed25519 válidas.
+  const sellerInvalid   = !isValidPublicKey(seller)
+  const resolverInvalid = !isValidPublicKey(resolver)
 
   async function handleBuy() {
     if (!walletAddress) return
@@ -115,6 +121,13 @@ export function BuyPage() {
             <div className="flow-step"><span className="flow-n">3</span> {b.step3}</div>
           </div>
 
+          {(sellerInvalid || resolverInvalid) && (
+            <div className="modal-error">
+              {b.invalidSeller}
+              {!sellerInvalid && resolverInvalid && ` ${b.invalidResolver}`}
+            </div>
+          )}
+
           {error && <div className="modal-error">{error}</div>}
 
           {walletAddress ? (
@@ -127,7 +140,7 @@ export function BuyPage() {
               <button
                 className="btn-primary buy-btn"
                 onClick={handleBuy}
-                disabled={loading}
+                disabled={loading || sellerInvalid || resolverInvalid}
               >
                 {loading
                   ? <><span className="spinner" /> {b.buying}</>

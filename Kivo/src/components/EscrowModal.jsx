@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useEscrowFlow } from '../hooks/useEscrowFlow'
 import { useLanguage } from '../context/LanguageContext'
+import { isValidPublicKey } from '../lib/validateStellarKeys'
 
 function shortenAddress(addr) {
   if (!addr) return ''
@@ -23,12 +24,40 @@ export function EscrowModal({ walletAddress, onClose }) {
     platformFee:     '1',
   })
 
+  // Issue #50: errores de validación de claves públicas Stellar (formato G…).
+  const [fieldErrors, setFieldErrors] = useState({
+    serviceProvider: '',
+    receiver:        '',
+    disputeResolver: '',
+  })
+
   function handleChange(ev) {
-    setForm(prev => ({ ...prev, [ev.target.name]: ev.target.value }))
+    const { name, value } = ev.target
+    setForm(prev => ({ ...prev, [name]: value }))
+    // Limpia el error del campo mientras el usuario lo corrige.
+    if (name in fieldErrors) {
+      setFieldErrors(prev => ({ ...prev, [name]: '' }))
+    }
+  }
+
+  /**
+   * Valida las cuentas Ed25519 antes de `createEscrow` (Issue #50).
+   * serviceProvider y disputeResolver son obligatorios; receiver es opcional
+   * pero si viene relleno debe ser una clave válida.
+   */
+  function validateStellarFields() {
+    const errors = {
+      serviceProvider: !isValidPublicKey(form.serviceProvider) ? e.invalidStellarKey : '',
+      receiver:        form.receiver && !isValidPublicKey(form.receiver) ? e.invalidStellarKey : '',
+      disputeResolver: !isValidPublicKey(form.disputeResolver) ? e.invalidStellarKey : '',
+    }
+    setFieldErrors(errors)
+    return !errors.serviceProvider && !errors.receiver && !errors.disputeResolver
   }
 
   async function handleSubmit(ev) {
     ev.preventDefault()
+    if (!validateStellarFields()) return
     await createEscrow(form, walletAddress)
   }
 
@@ -130,7 +159,7 @@ export function EscrowModal({ walletAddress, onClose }) {
             </div>
           </div>
 
-          <Field label={e.fieldProvider} required>
+          <Field label={e.fieldProvider} required error={fieldErrors.serviceProvider}>
             <input
               name="serviceProvider"
               placeholder="G..."
@@ -140,7 +169,7 @@ export function EscrowModal({ walletAddress, onClose }) {
             />
           </Field>
 
-          <Field label={e.fieldReceiver} hint={e.fieldReceiverHint}>
+          <Field label={e.fieldReceiver} hint={e.fieldReceiverHint} error={fieldErrors.receiver}>
             <input
               name="receiver"
               placeholder={e.fieldReceiverPlaceholder}
@@ -149,7 +178,7 @@ export function EscrowModal({ walletAddress, onClose }) {
             />
           </Field>
 
-          <Field label={e.fieldDispute} hint={e.fieldDisputeHint} required>
+          <Field label={e.fieldDispute} hint={e.fieldDisputeHint} required error={fieldErrors.disputeResolver}>
             <input
               name="disputeResolver"
               placeholder="G..."
@@ -205,7 +234,7 @@ function ModalOverlay({ children, onClose }) {
 }
 
 /* ── Field helper ─────────────────────────────────────────────────────── */
-function Field({ label, hint, required, children }) {
+function Field({ label, hint, required, error, children }) {
   return (
     <div className="form-field">
       <label className="form-label">
@@ -214,6 +243,7 @@ function Field({ label, hint, required, children }) {
         {hint && <span className="form-hint"> — {hint}</span>}
       </label>
       {children}
+      {error && <span className="form-error">{error}</span>}
     </div>
   )
 }
