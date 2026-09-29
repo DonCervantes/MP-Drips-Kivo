@@ -25,24 +25,34 @@ function getStatusKey(escrow) {
 
 /**
  * Flujo single-release:
- *   1. Fondear   (approver,      balance === 0)
- *   2. Aprobar   (approver,      balance > 0 y hito sin aprobar)
- *   3. Liberar   (releaseSigner, balance > 0 y todos los hitos aprobados)
+ *   1. Fondear   (approver,        balance === 0)
+ *   2. Aprobar   (approver,        balance > 0 y hito sin aprobar)
+ *   3. Liberar   (releaseSigner,   balance > 0 y todos los hitos aprobados)
+ *   4. Disputar  (approver o serviceProvider, escrow activo/fondeado, no released/resolved/disputed)
+ *   5. Resolver  (disputeResolver, escrow en disputa)
  */
 function getActions(escrow, walletAddress) {
-  const flags        = escrow?.flags ?? {}
-  const roles        = escrow?.roles ?? {}
-  const balance      = Number(escrow?.balance ?? 0)
-  const totalAmount  = Number(escrow?.amount ?? 0)
-  const addr         = walletAddress?.toLowerCase() ?? ''
-  const milestones   = escrow?.milestones ?? []
-  const allApproved  = milestones.length > 0 && milestones.every(m => m.approved)
-  const fullyFunded  = totalAmount > 0 && balance >= totalAmount
+  const flags       = escrow?.flags ?? {}
+  const roles       = escrow?.roles ?? {}
+  const balance     = Number(escrow?.balance ?? 0)
+  const totalAmount = Number(escrow?.amount ?? 0)
+  const addr        = walletAddress?.toLowerCase() ?? ''
+  const milestones  = escrow?.milestones ?? []
+  const allApproved = milestones.length > 0 && milestones.every(m => m.approved)
+  const fullyFunded = totalAmount > 0 && balance >= totalAmount
 
   if (flags.released || flags.resolved) return []
 
   const actions = []
 
+  // ── Dispute already open ──────────────────────────────────────────
+  if (flags.disputed) {
+    if (roles.disputeResolver?.toLowerCase() === addr)
+      actions.push('resolve')
+    return actions
+  }
+
+  // ── Normal flow ──────────────────────────────────────────────────
   if (!fullyFunded && roles.approver?.toLowerCase() === addr)
     actions.push('fund')
 
@@ -52,12 +62,21 @@ function getActions(escrow, walletAddress) {
   if (fullyFunded && allApproved && roles.releaseSigner?.toLowerCase() === addr)
     actions.push('release')
 
+  // ── Open dispute (approver or serviceProvider, escrow funded) ─────
+  if (
+    fullyFunded &&
+    !flags.disputed &&
+    (roles.approver?.toLowerCase() === addr || roles.serviceProvider?.toLowerCase() === addr)
+  ) {
+    actions.push('dispute')
+  }
+
   return actions
 }
 
 /* ── Componente principal ───────────────────────────────────────────── */
 export function EscrowDetailModal({ escrow, walletAddress, onClose, onActionDone }) {
-  const { fundEscrow, approveMilestone, releaseFunds, loading, error } = useEscrowFlow()
+  const { fundEscrow, approveMilestone, releaseFunds, openDispute, resolveEscrowDispute, loading, error } = useEscrowFlow()
   const { t } = useLanguage()
   const d = t.detail
 
@@ -67,6 +86,10 @@ export function EscrowDetailModal({ escrow, walletAddress, onClose, onActionDone
   const [fundAmount, setFundAmount] = useState(String(remaining || totalAmount || ''))
   const [actionDone, setActionDone] = useState(null)
 
+  // Resolve dispute distribution inputs
+  const [resolveApproverAmt, setResolveApproverAmt] = useState('')
+  const [resolveProviderAmt, setResolveProviderAmt] = useState('')
+
   const statusKey   = getStatusKey(escrow)
   const statusEntry = d.statusLabels?.[statusKey] ?? { label: statusKey, color: 'status-active' }
   const actions     = getActions(escrow, walletAddress)
@@ -75,6 +98,8 @@ export function EscrowDetailModal({ escrow, walletAddress, onClose, onActionDone
     funded:   d.successFunded,
     approved: d.successApproved,
     released: d.successReleased,
+    disputed: d.successDisputed,
+    resolved: d.successResolved,
   }
 
   async function handleFund() {
@@ -94,6 +119,31 @@ export function EscrowDetailModal({ escrow, walletAddress, onClose, onActionDone
     setActionDone('released')
     onActionDone?.()
   }
+
+  async function handleOpenDispute() {
+    await openDispute(escrow.contractId, walletAddress)
+    setActionDone('disputed')
+    onActionDone?.()
+  }
+
+  async function handleResolveDispute() {
+    const distributions = [
+      { address: escrow.roles?.approver,         amount: Number(resolveApproverAmt) || 0 },
+      { address: escrow.roles?.serviceProvider,  amount: Number(resolveProviderAmt) || 0 },
+    ].filter(d => d.address && d.amount > 0)
+
+    await resolveEscrowDispute(
+      escrow.contractId,
+      walletAddress,
+      distributions,
+    )
+    setActionDone('resolved')
+    onActionDone?.()
+  }
+
+  // Derived totals for resolve form validation
+  const resolveTotal = (Number(resolveApproverAmt) || 0) + (Number(resolveProviderAmt) || 0)
+  const resolveValid = resolveTotal > 0 && Math.abs(resolveTotal - totalAmount) < 0.0001
 
   return (
     <div className="detail-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
@@ -283,6 +333,91 @@ export function EscrowDetailModal({ escrow, walletAddress, onClose, onActionDone
                   disabled={loading}
                 >
                   {loading ? <><span className="spinner" /> {d.signing}</> : d.releaseBtn}
+                </button>
+              </div>
+            )}
+
+            {/* Paso 4: Abrir disputa (approver o serviceProvider) */}
+            {actions.includes('dispute') && (
+              <div className="action-block action-block-dispute">
+                <div className="action-step-header">
+                  <span className="action-step-num action-step-num-dispute">!</span>
+                  <span className="detail-section-label">{d.disputeTitle}</span>
+                </div>
+                <p className="action-warn">{d.disputeWarn}</p>
+                <button
+                  className="btn-action-dispute"
+                  onClick={handleOpenDispute}
+                  disabled={loading}
+                >
+                  {loading ? <><span className="spinner" /> {d.signing}</> : d.disputeBtn}
+                </button>
+              </div>
+            )}
+
+            {/* Paso 5: Resolver disputa (disputeResolver) */}
+            {actions.includes('resolve') && (
+              <div className="action-block action-block-resolve">
+                <div className="action-step-header">
+                  <span className="action-step-num">5</span>
+                  <span className="detail-section-label">{d.resolveTitle}</span>
+                </div>
+                <p className="action-warn">{d.resolveWarn}</p>
+
+                {/* Distribution inputs */}
+                <div className="resolve-distributions">
+                  <div className="fund-row" style={{ marginBottom: '0.5rem' }}>
+                    <label className="form-label" style={{ minWidth: '7rem' }}>
+                      {d.resolveApproverLabel}
+                    </label>
+                    <div className="fund-input-wrap">
+                      <input
+                        type="number"
+                        className="fund-input"
+                        value={resolveApproverAmt}
+                        onChange={e => setResolveApproverAmt(e.target.value)}
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                      />
+                      <span className="fund-sym">{escrow.trustline?.symbol ?? 'USDC'}</span>
+                    </div>
+                  </div>
+                  <div className="fund-row" style={{ marginBottom: '0.5rem' }}>
+                    <label className="form-label" style={{ minWidth: '7rem' }}>
+                      {d.resolveProviderLabel}
+                    </label>
+                    <div className="fund-input-wrap">
+                      <input
+                        type="number"
+                        className="fund-input"
+                        value={resolveProviderAmt}
+                        onChange={e => setResolveProviderAmt(e.target.value)}
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                      />
+                      <span className="fund-sym">{escrow.trustline?.symbol ?? 'USDC'}</span>
+                    </div>
+                  </div>
+
+                  {/* Running total hint */}
+                  {(resolveApproverAmt || resolveProviderAmt) && (
+                    <p className={`fund-partial-warn ${resolveValid ? 'fund-partial-ok' : ''}`}>
+                      {d.resolveTotalPre}{' '}
+                      <strong>{resolveTotal.toFixed(2)} {escrow.trustline?.symbol ?? 'USDC'}</strong>
+                      {' / '}{totalAmount} {escrow.trustline?.symbol ?? 'USDC'}
+                      {!resolveValid && ` — ${d.resolveTotalWarn}`}
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  className="btn-action-resolve"
+                  onClick={handleResolveDispute}
+                  disabled={loading || !resolveValid}
+                >
+                  {loading ? <><span className="spinner" /> {d.signing}</> : d.resolveBtn}
                 </button>
               </div>
             )}
