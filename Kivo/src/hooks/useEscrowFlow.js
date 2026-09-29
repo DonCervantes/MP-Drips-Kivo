@@ -4,6 +4,8 @@ import {
   useFundEscrow,
   useReleaseFunds,
   useApproveMilestone,
+  useStartDispute,
+  useResolveDispute,
   useSendTransaction,
 } from '@trustless-work/escrow/hooks'
 import { useWallet } from '../context/WalletContext'
@@ -46,6 +48,8 @@ export function useEscrowFlow() {
   const { fundEscrow: fund }        = useFundEscrow()
   const { releaseFunds: release }   = useReleaseFunds()
   const { approveMilestone: approv }= useApproveMilestone()
+  const { startDispute }            = useStartDispute()
+  const { resolveDispute }          = useResolveDispute()
   const { sendTransaction }         = useSendTransaction()
 
   async function createEscrow(formData, walletAddress) {
@@ -177,5 +181,63 @@ export function useEscrowFlow() {
     }
   }
 
-  return { createEscrow, fundEscrow, approveMilestone, releaseFunds, loading, error, result }
+  /**
+   * Flujo single-release: approver o serviceProvider abren la disputa.
+   * SingleReleaseStartDisputePayload = { contractId, signer }
+   */
+  async function openDispute(contractId, walletAddress) {
+    setLoading(true)
+    setError(null)
+    try {
+      const { unsignedTransaction, status } = await startDispute(
+        { contractId, signer: walletAddress },
+        'single-release'
+      )
+      if (status === 'FAILED' || !unsignedTransaction)
+        throw new Error('No se pudo abrir la disputa.')
+
+      const { signedXdr } = await signTransaction(unsignedTransaction)
+      const txResult      = await sendTransaction(signedXdr)
+      setResult({ disputed: true, status: txResult?.status })
+    } catch (err) {
+      const msg = extractError(err, 'Error al abrir la disputa.')
+      setError(msg)
+      throw new Error(msg)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /**
+   * Flujo single-release: sólo el disputeResolver puede resolver la disputa.
+   * SingleReleaseResolveDisputePayload = {
+   *   contractId, disputeResolver,
+   *   distributions: [{ address, amount }]
+   * }
+   * La suma de distributions.amount debe ser igual al monto total del escrow.
+   */
+  async function resolveEscrowDispute(contractId, disputeResolver, distributions) {
+    setLoading(true)
+    setError(null)
+    try {
+      const { unsignedTransaction, status } = await resolveDispute(
+        { contractId, disputeResolver, distributions },
+        'single-release'
+      )
+      if (status === 'FAILED' || !unsignedTransaction)
+        throw new Error('No se pudo resolver la disputa.')
+
+      const { signedXdr } = await signTransaction(unsignedTransaction)
+      const txResult      = await sendTransaction(signedXdr)
+      setResult({ resolved: true, status: txResult?.status })
+    } catch (err) {
+      const msg = extractError(err, 'Error al resolver la disputa.')
+      setError(msg)
+      throw new Error(msg)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return { createEscrow, fundEscrow, approveMilestone, releaseFunds, openDispute, resolveEscrowDispute, loading, error, result }
 }
