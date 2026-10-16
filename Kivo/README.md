@@ -102,3 +102,9 @@ npm run dev
 ## Hackathon
 
 Proyecto desarrollado para **StellarHack 2026**.
+
+---
+
+## Licencia
+
+Este proyecto está bajo la licencia MIT. Ver [LICENSE](../LICENSE) para más detalles.
