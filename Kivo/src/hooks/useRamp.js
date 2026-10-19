@@ -3,7 +3,6 @@ import {
   Asset,
   Account,
   TransactionBuilder,
-  Networks,
   Operation,
   BASE_FEE,
 } from '@stellar/stellar-sdk'
@@ -17,24 +16,27 @@ import {
   KIVO_CUSTOMER_ID,
 } from '../services/etherfuse'
 import { useWallet } from '../context/WalletContext'
+import { useNetwork } from '../context/networkState'
 
 const POLLING_INTERVAL_MS = 3_000
 const QUOTE_TTL_MS = 120_000
 const ORDER_STALE_MS = 10 * 60 * 1_000   // 10 min → descartar orden atascada
-const HORIZON_TESTNET = 'https://horizon-testnet.stellar.org'
 const IS_DEV = import.meta.env.DEV
 const LS_KEY = 'kivo_ramp_active_order'
 
-// USDC en Stellar testnet (mismo que USDC_STELLAR_ID)
+// USDC que usa Etherfuse (sandbox → testnet). El ramp solo corre en redes con rampSupported.
 const [USDC_CODE, USDC_ISSUER] = USDC_STELLAR_ID.split(':')
 const USDC_ASSET = new Asset(USDC_CODE, USDC_ISSUER)
+
+export const RAMP_UNAVAILABLE_MSG = 'El ramp solo está disponible en Testnet.'
 
 /**
  * Verifica que el wallet tenga trustline de USDC.
  * Si no la tiene, construye una tx changeTrust, la firma y la envía a Horizon.
+ * Horizon y passphrase salen de la red activa (`cfg`).
  */
-async function ensureUsdcTrustline(walletAddress, signTransaction) {
-  const accountRes = await fetch(`${HORIZON_TESTNET}/accounts/${walletAddress}`)
+async function ensureUsdcTrustline(walletAddress, signTransaction, cfg) {
+  const accountRes = await fetch(`${cfg.horizonUrl}/accounts/${walletAddress}`)
   if (!accountRes.ok) throw new Error('No se pudo obtener la cuenta Stellar.')
   const accountData = await accountRes.json()
 
@@ -48,7 +50,7 @@ async function ensureUsdcTrustline(walletAddress, signTransaction) {
   const stellarAccount = new Account(walletAddress, accountData.sequence)
   const tx = new TransactionBuilder(stellarAccount, {
     fee: BASE_FEE,
-    networkPassphrase: Networks.TESTNET,
+    networkPassphrase: cfg.passphrase,
   })
     .addOperation(Operation.changeTrust({ asset: USDC_ASSET }))
     .setTimeout(180)
@@ -57,7 +59,7 @@ async function ensureUsdcTrustline(walletAddress, signTransaction) {
   const { signedXdr } = await signTransaction(tx.toXDR())
 
   const formData = new URLSearchParams({ tx: signedXdr })
-  const submitRes = await fetch(`${HORIZON_TESTNET}/transactions`, {
+  const submitRes = await fetch(`${cfg.horizonUrl}/transactions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: formData.toString(),
@@ -114,6 +116,7 @@ export function useRamp() {
 
   const walletIdCache = useRef({})
   const { walletAddress, signTransaction } = useWallet()
+  const { config } = useNetwork()
   const pollingRef    = useRef(null)
   const quoteTimerRef = useRef(null)
 
@@ -210,6 +213,7 @@ export function useRamp() {
   // ── ONRAMP  MXN → USDC ────────────────────────────────────────────────────
 
   const startOnramp = useCallback(async (mxnAmount, bankAccountId) => {
+    if (!config.rampSupported) { setError(RAMP_UNAVAILABLE_MSG); setStatus('error'); return }
     if (!walletAddress) { setError('Conecta tu wallet primero.'); return }
 
     reset()
@@ -217,7 +221,7 @@ export function useRamp() {
 
     try {
       // Garantizar trustline de USDC antes de crear la orden
-      await ensureUsdcTrustline(walletAddress, signTransaction)
+      await ensureUsdcTrustline(walletAddress, signTransaction, config)
 
       const cryptoWalletId = await ensureWalletId(walletAddress)
       const quoteId = newUUID()
@@ -268,11 +272,12 @@ export function useRamp() {
       setStatus('error')
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [walletAddress, signTransaction])
+  }, [walletAddress, signTransaction, config])
 
   // ── OFFRAMP  USDC → MXN ────────────────────────────────────────────────────
 
   const startOfframp = useCallback(async (usdcAmount, bankAccountId) => {
+    if (!config.rampSupported) { setError(RAMP_UNAVAILABLE_MSG); setStatus('error'); return }
     if (!walletAddress) { setError('Conecta tu wallet primero.'); return }
 
     reset()
@@ -319,7 +324,7 @@ export function useRamp() {
       if (xdr) {
         const { signedXdr } = await signTransaction(xdr)
         const formData = new URLSearchParams({ tx: signedXdr })
-        const horizonRes = await fetch(`${HORIZON_TESTNET}/transactions`, {
+        const horizonRes = await fetch(`${config.horizonUrl}/transactions`, {
           method:  'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body:    formData.toString(),
@@ -350,7 +355,7 @@ export function useRamp() {
       setStatus('error')
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [walletAddress, signTransaction])
+  }, [walletAddress, signTransaction, config])
 
   return { status, order, quote, error, startOnramp, startOfframp, reset }
 }

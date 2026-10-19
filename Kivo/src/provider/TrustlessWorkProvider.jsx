@@ -1,18 +1,17 @@
 import { TrustlessWorkConfig, development, mainNet } from '@trustless-work/escrow'
-import { useNetwork } from '../context/NetworkContext'
+import { useNetwork } from '../context/networkState'
+
+const BASE_URLS = { development, mainNet }
 
 /**
  * Envuelve la app con el proveedor del SDK de Trustless Work.
- * Usa VITE_TRUSTLESS_API_KEY (testnet) o VITE_TRUSTLESS_API_KEY_MAINNET según la red activa.
+ * Endpoint y API key salen de la configuración de red activa (src/config/networks.js).
  */
 export function TrustlessWorkProvider({ children }) {
-  const { network } = useNetwork()
+  const { config } = useNetwork()
 
-  const apiKey = network === 'mainnet'
-    ? import.meta.env.VITE_TRUSTLESS_API_KEY_MAINNET || ''
-    : import.meta.env.VITE_TRUSTLESS_API_KEY || ''
-
-  const baseURL = network === 'mainnet' ? mainNet : development
+  const apiKey = import.meta.env[config.trustlessApiKeyEnv] || ''
+  const baseURL = BASE_URLS[config.trustless]
 
   return (
     <TrustlessWorkConfig baseURL={baseURL} apiKey={apiKey}>

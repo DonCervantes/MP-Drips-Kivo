@@ -5,9 +5,10 @@ import {
   getAddress as freighterGetAddress,
   requestAccess as freighterRequestAccess,
   signTransaction as freighterSignTransaction,
+  getNetwork as freighterGetNetwork,
 } from '@stellar/freighter-api'
-import { Networks } from '@stellar/stellar-sdk'
-import { useNetwork } from './NetworkContext'
+import { useNetwork } from './networkState'
+import { walletNetworkMismatch } from '../config/networks'
 
 const WalletContext = createContext(null)
 
@@ -16,7 +17,7 @@ const WalletContext = createContext(null)
  * Expone un wallet unificado: Accesly tiene prioridad si ambos están conectados.
  */
 export function WalletProvider({ children }) {
-  const { network } = useNetwork()
+  const { config } = useNetwork()
 
   const {
     wallet,
@@ -49,12 +50,16 @@ export function WalletProvider({ children }) {
       await freighterRequestAccess()
       const { address } = await freighterGetAddress()
       setFreighterAddr(address)
+      // Avisar de entrada si Freighter está en otra red que Kivo
+      const net = await freighterGetNetwork().catch(() => null)
+      const mismatch = walletNetworkMismatch(config, net?.networkPassphrase)
+      if (mismatch) setFreighterError(mismatch)
     } catch (err) {
       setFreighterError(err?.message || 'Error al conectar Freighter')
     } finally {
       setFreighterLoading(false)
     }
-  }, [])
+  }, [config])
 
   /* ── Freighter: desconectar ── */
   const disconnectFreighter = useCallback(() => {
@@ -68,15 +73,19 @@ export function WalletProvider({ children }) {
       return acceslySign(unsignedXdr)
     }
     if (walletType === 'freighter') {
+      // Nunca firmar si Freighter está en otra red que la activa en Kivo
+      const net = await freighterGetNetwork().catch(() => null)
+      const mismatch = walletNetworkMismatch(config, net?.networkPassphrase)
+      if (mismatch) throw new Error(mismatch)
       const result = await freighterSignTransaction(unsignedXdr, {
-        networkPassphrase: network === 'mainnet' ? Networks.PUBLIC : Networks.TESTNET,
+        networkPassphrase: config.passphrase,
         address: freighterAddr,
       })
       // Freighter v6 devuelve { signedTxXdr }
       return { signedXdr: result.signedTxXdr ?? result }
     }
     throw new Error('No hay wallet conectada')
-  }, [walletType, acceslySign, freighterAddr, network])
+  }, [walletType, acceslySign, freighterAddr, config])
 
   return (
     <WalletContext.Provider value={{

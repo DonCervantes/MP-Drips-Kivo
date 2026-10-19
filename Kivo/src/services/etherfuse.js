@@ -8,11 +8,13 @@
  *  - USDC id     : USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
  */
 
+import { NETWORKS, usdcAssetId } from '../config/networks'
+
 const API_KEY  = import.meta.env.VITE_ETHERFUSE_API_KEY
 const BASE_URL = import.meta.env.VITE_ETHERFUSE_BASE_URL || 'https://api.sand.etherfuse.com'
 
-export const USDC_STELLAR_ID =
-  'USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'
+/** Etherfuse sandbox opera solo con USDC de testnet; el ramp está deshabilitado en otras redes. */
+export const USDC_STELLAR_ID = usdcAssetId(NETWORKS.testnet)
 
 /** UUID del wallet de la plataforma Kivo registrado en Etherfuse sandbox */
 export const KIVO_WALLET_ID = '5ca25f69-0fc3-4099-8d44-4575b27d15a9'

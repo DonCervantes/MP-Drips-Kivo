@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ConnectButton } from 'accesly'
 import { useWallet } from './context/WalletContext'
 import { useLanguage } from './context/LanguageContext'
-import { useNetwork } from './context/NetworkContext'
+import { useNetwork } from './context/networkState'
 import { EscrowModal }       from './components/EscrowModal'
 import { EscrowDrawer }      from './components/EscrowDrawer'
 import { RampPage }          from './components/Ramp/RampPage'
@@ -33,14 +33,15 @@ export default function App() {
   } = useWallet()
 
   const { lang, setLang, t } = useLanguage()
-  const { network, toggleNetwork } = useNetwork()
+  const { network, config, toggleNetwork, canUseMainnet, mainnetBlockers, networkError } = useNetwork()
+  const mainnetLocked = network === 'testnet' && !canUseMainnet
 
   const [showEscrow, setShowEscrow] = useState(false)
   const [showDrawer, setShowDrawer] = useState(false)
   const [showRamp,   setShowRamp]   = useState(false)
   const [showOffer,  setShowOffer]  = useState(false)
 
-  const anyError = acceslyError || freighterError
+  const anyError = networkError || acceslyError || freighterError
 
   return (
     <div className="app">
@@ -73,14 +74,20 @@ export default function App() {
           <button
             className={`btn-network-toggle ${network === 'mainnet' ? 'btn-network-toggle--mainnet' : ''}`}
             onClick={toggleNetwork}
-            title={network === 'testnet' ? 'Cambiar a Mainnet' : 'Cambiar a Testnet'}
+            disabled={mainnetLocked}
+            aria-disabled={mainnetLocked}
+            title={
+              mainnetLocked
+                ? `Mainnet no disponible: ${mainnetBlockers.join('; ')}`
+                : network === 'testnet' ? 'Cambiar a Mainnet' : 'Cambiar a Testnet'
+            }
           >
-            {network === 'testnet' ? 'Testnet' : 'Mainnet'}
+            {config.label}
           </button>
 
           {walletAddress && (
             <>
-              {network === 'testnet' && (
+              {config.rampSupported && (
                 <button className="btn-my-escrows" onClick={() => setShowRamp(true)}>
                   {t.nav.ramp}
                 </button>
@@ -277,7 +284,7 @@ export default function App() {
       </footer>
 
       {/* ── RAMP MODAL ── */}
-      {showRamp && (
+      {showRamp && config.rampSupported && (
         <RampPage onClose={() => setShowRamp(false)} />
       )}
 
