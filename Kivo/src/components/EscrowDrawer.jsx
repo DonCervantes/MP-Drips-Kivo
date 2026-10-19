@@ -1,3 +1,4 @@
+import { getStatusKey } from '../lib/escrow-state'
 import { useEffect, useState } from 'react'
 import { useMyEscrows } from '../hooks/useMyEscrows'
 import { EscrowDetailModal } from './EscrowDetailModal'
@@ -14,16 +15,6 @@ function formatDate(d, locale) {
   return new Date(d._seconds * 1000).toLocaleDateString(locale, {
     day: '2-digit', month: 'short', year: 'numeric',
   })
-}
-
-/** Devuelve la clave del estado a partir de los flags del escrow */
-function getStatusKey(escrow) {
-  const f = escrow?.flags ?? {}
-  if (f.released) return 'released'
-  if (f.resolved) return 'resolved'
-  if (f.disputed) return 'disputed'
-  if (f.approved) return 'approved'
-  return 'active'
 }
 
 /** Devuelve la clave del rol del usuario en el escrow */
