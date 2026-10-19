@@ -87,6 +87,25 @@ npm install
 npm run dev
 ```
 
+### Tests de la lógica de ramp y escrow
+
+Desde `Kivo/`, con Node.js 20 o superior:
+
+```bash
+npm test
+```
+
+Los tests usan `node:test` y no necesitan instalar dependencias, configurar
+wallets, claves API ni acceder a servicios externos. Cubren la normalización
+de respuestas de Etherfuse, los estados del ramp, la prioridad de flags de
+escrow y las acciones según rol, fondeo e hitos. Los helpers probados son los
+mismos que consumen los hooks y las vistas de la aplicación.
+
+CI ejecuta `npm test` en un job independiente: un test fallido bloquea ese
+check aunque el job de lint/build falle por otro motivo. Esta cobertura
+caracteriza el comportamiento actual; no verifica transacciones on-chain ni
+cambia las políticas de disputa o comparación de direcciones.
+
 ---
 
 ## Equipo
