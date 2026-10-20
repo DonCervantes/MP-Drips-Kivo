@@ -15,6 +15,7 @@ import {
   simulateFiatReceived,
   USDC_STELLAR_ID,
   KIVO_CUSTOMER_ID,
+  isValidBankAccountId,
 } from '../services/etherfuse'
 import { useWallet } from '../context/WalletContext'
 
@@ -276,6 +277,11 @@ export function useRamp() {
     if (!walletAddress) { setError('Conecta tu wallet primero.'); return }
 
     reset()
+    if (!isValidBankAccountId(bankAccountId)) {
+      setError('Ingresa el ID de tu cuenta bancaria personal de Etherfuse.')
+      setStatus('error')
+      return
+    }
     setStatus('creating')
 
     try {
@@ -306,7 +312,7 @@ export function useRamp() {
       const raw = await createOrder({
         orderId,
         quoteId:       q.quoteId,
-        bankAccountId,
+        bankAccountId: bankAccountId.trim(),
         cryptoWalletId,
       })
       const o = normalizeOrder(raw)
