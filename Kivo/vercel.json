@@ -1,5 +1,8 @@
 {
   "rewrites": [
+    { "source": "/api/etherfuse/(.*)", "destination": "/api/etherfuse?path=$1" },
+    { "source": "/api/trustless/(.*)", "destination": "/api/trustless?path=$1" },
+    { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

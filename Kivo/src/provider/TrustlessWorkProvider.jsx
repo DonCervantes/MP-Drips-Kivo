@@ -1,21 +1,19 @@
-import { TrustlessWorkConfig, development, mainNet } from '@trustless-work/escrow'
+import { TrustlessWorkConfig } from '@trustless-work/escrow'
 import { useNetwork } from '../context/NetworkContext'
 
 /**
  * Envuelve la app con el proveedor del SDK de Trustless Work.
- * Usa VITE_TRUSTLESS_API_KEY (testnet) o VITE_TRUSTLESS_API_KEY_MAINNET según la red activa.
+ * Todas las peticiones van a través del BFF (/api/trustless/:network).
+ * Las API keys privadas se inyectan en el servidor y nunca se exponen al cliente.
  */
 export function TrustlessWorkProvider({ children }) {
   const { network } = useNetwork()
 
-  const apiKey = network === 'mainnet'
-    ? import.meta.env.VITE_TRUSTLESS_API_KEY_MAINNET || ''
-    : import.meta.env.VITE_TRUSTLESS_API_KEY || ''
-
-  const baseURL = network === 'mainnet' ? mainNet : development
+  const bffBase = import.meta.env.VITE_BFF_URL || ''
+  const baseURL = `${bffBase}/api/trustless/${network}`
 
   return (
-    <TrustlessWorkConfig baseURL={baseURL} apiKey={apiKey}>
+    <TrustlessWorkConfig key={network} baseURL={baseURL}>
       {children}
     </TrustlessWorkConfig>
   )

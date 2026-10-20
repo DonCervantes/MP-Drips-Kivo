@@ -1,31 +1,19 @@
 /**
- * Cliente HTTP para la API de Etherfuse FX.
- * Authorization usa la API key directamente, sin prefijo "Bearer".
- *
- * Datos reales del sandbox (obtenidos via MCP):
- *  - customerId  : e6d34608-26b5-4246-89d4-658a227b16ae
- *  - walletId    : 5ca25f69-0fc3-4099-8d44-4575b27d15a9  (plataforma Kivo)
- *  - USDC id     : USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5
+ * Cliente HTTP para la API de Etherfuse FX a través del BFF de Kivo.
+ * Las credenciales (API Key) y el ID de organización residen en el servidor
+ * y nunca se exponen al navegador.
  */
 
-const API_KEY  = import.meta.env.VITE_ETHERFUSE_API_KEY
-const BASE_URL = import.meta.env.VITE_ETHERFUSE_BASE_URL || 'https://api.sand.etherfuse.com'
+const BASE_URL = (import.meta.env.VITE_BFF_URL || '') + '/api/etherfuse'
 
 export const USDC_STELLAR_ID =
   'USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'
-
-/** UUID del wallet de la plataforma Kivo registrado en Etherfuse sandbox */
-export const KIVO_WALLET_ID = '5ca25f69-0fc3-4099-8d44-4575b27d15a9'
-
-/** UUID de la organización Kivo en Etherfuse sandbox */
-export const KIVO_CUSTOMER_ID = 'e6d34608-26b5-4246-89d4-658a227b16ae'
 
 /** @returns {Promise<any>} */
 async function request(path, options = {}) {
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {
-      Authorization: API_KEY,
       'Content-Type': 'application/json',
       ...options.headers,
     },
@@ -90,30 +78,15 @@ export function getAssets(walletAddress) {
 // ── Quotes ────────────────────────────────────────────────────────────────────
 
 /**
- * Crea una cotización.
- *
- * Shape real del request (descubierto via sandbox):
- * {
- *   quoteId        : string (UUID — idempotency key, generado por el cliente)
- *   customerId     : string (UUID de la organización)
- *   blockchain     : 'stellar'
- *   cryptoWalletId : string (UUID del wallet registrado)
- *   sourceAmount   : string (monto como string, ej. "500")
- *   quoteAssets    : { type: 'onramp'|'offramp', sourceAsset, targetAsset }
- * }
- *
- * Shape real de la respuesta:
- * {
- *   quoteId, blockchain, quoteAssets,
- *   sourceAmount, destinationAmount,   ← (no targetAmount)
- *   exchangeRate, feeBps, feeAmount,
- *   expiresAt, requiresSwap
- * }
+ * Crea una cotización a través del BFF.
+ * customerId es opcional; si no se provee, el BFF inyecta el ID de organización de Kivo.
  */
 export function createQuote({ quoteId, customerId, blockchain, cryptoWalletId, sourceAmount, quoteAssets }) {
+  const payload = { quoteId, blockchain, cryptoWalletId, sourceAmount, quoteAssets }
+  if (customerId) payload.customerId = customerId
   return request('/ramp/quote', {
     method: 'POST',
-    body: JSON.stringify({ quoteId, customerId, blockchain, cryptoWalletId, sourceAmount, quoteAssets }),
+    body: JSON.stringify(payload),
   })
 }
 
@@ -121,18 +94,6 @@ export function createQuote({ quoteId, customerId, blockchain, cryptoWalletId, s
 
 /**
  * Crea una orden a partir de un quoteId.
- *
- * Request shape real:
- * {
- *   orderId        : string (UUID — idempotency key, generado por el cliente)
- *   quoteId        : string
- *   bankAccountId  : string
- *   cryptoWalletId : string
- * }
- *
- * Response shape real:
- *   Onramp:  { onramp:  { orderId, depositClabe, depositAmount, depositBankName, depositAccountHolder } }
- *   Offramp: { offramp: { orderId, burnTransaction, ... } }
  */
 export function createOrder({ orderId, quoteId, bankAccountId, cryptoWalletId }) {
   return request('/ramp/order', {

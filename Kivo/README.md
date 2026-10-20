@@ -18,7 +18,7 @@ Kivo es una dApp que permite a usuarios de Latinoamérica crear y gestionar **es
 - Creación de escrows con monto, receptor y descripción directamente desde el navegador
 - Visualización de todos los escrows activos del wallet conectado (drawer lateral)
 - Detalle de cada escrow con estado, montos y partes involucradas
-- Integración con el SDK `@trustless-work/escrow` en testnet y mainnet
+- Integración con el SDK `@trustless-work/escrow` en testnet y mainnet a través de un BFF seguro
 
 ### Onramp / Offramp (Etherfuse)
 - **Onramp MXN → USDC**: el usuario transfiere pesos mexicanos vía SPEI y recibe USDC en su wallet Stellar
@@ -27,6 +27,7 @@ Kivo es una dApp que permite a usuarios de Latinoamérica crear y gestionar **es
 - Creación automática de trustline USDC si el wallet no la tiene
 - Polling de estado de orden cada 3 segundos (persiste entre cierres del modal)
 - Soporte de simulación fiat en ambiente de desarrollo (sandbox Etherfuse)
+- Llamadas protegidas mediante BFF; el navegador nunca recibe API keys privadas ni UUIDs de organización
 
 ### Wallets soportados
 - **Accesly** — wallet social, integración con `<ConnectButton />`
@@ -38,7 +39,7 @@ Kivo es una dApp que permite a usuarios de Latinoamérica crear y gestionar **es
 
 ### Red configurable
 - Toggle Testnet / Mainnet en la navbar
-- SDK y keys se intercambian automáticamente según la red seleccionada
+- El BFF conmuta las credenciales y URLs base server-side según la red seleccionada
 
 ---
 
@@ -47,6 +48,7 @@ Kivo es una dApp que permite a usuarios de Latinoamérica crear y gestionar **es
 | Capa | Tecnología |
 |---|---|
 | Frontend | React 19 + Vite |
+| BFF / Backend | Node.js Serverless Functions / Vite Proxy Middleware |
 | Blockchain | Stellar (`@stellar/stellar-sdk`) |
 | Escrow SDK | `@trustless-work/escrow` v3 |
 | Ramp | Etherfuse FX API (sandbox) |
@@ -67,16 +69,34 @@ Puedes verificar transacciones en Stellar Testnet aquí:
 
 ## Configuración
 
-Copia `.env.example` y completa las variables:
+Copia `.env.example` a `.env` y completa las variables requeridas.
 
-```env
-VITE_ETHERFUSE_API_KEY=          # API Key de Etherfuse
-VITE_ETHERFUSE_BASE_URL=         # URL base (default: https://api.sand.etherfuse.com)
-VITE_TRUSTLESS_API_KEY=          # API Key Trustless Work (testnet)
-VITE_TRUSTLESS_API_KEY_MAINNET=  # API Key Trustless Work (mainnet)
-VITE_SUPABASE_URL=               # URL de tu proyecto Supabase
-VITE_SUPABASE_ANON_KEY=          # Anon key de Supabase
-```
+### Variables públicas (Cliente / Vite)
+
+Estas variables usan el prefijo `VITE_*` y se embeben en el bundle estático enviado al navegador. **Nunca** deben contener claves privadas ni secretos operativos.
+
+| Variable | Descripción | Requerida |
+|---|---|---|
+| `VITE_SUPABASE_URL` | URL de tu proyecto Supabase | Sí |
+| `VITE_SUPABASE_ANON_KEY` | Anon key pública de Supabase | Sí |
+| `VITE_KIVO_PLATFORM_ADDRESS` | Dirección pública Stellar receptora de comisiones de plataforma | No |
+| `VITE_BFF_URL` | URL base del BFF si no se ejecuta en el mismo dominio (default: `""`, usa rutas relativas `/api`) | No |
+
+### Variables server-only (BFF / Servidor / Serverless)
+
+Estas variables **no** llevan el prefijo `VITE_*`. Viven exclusivamente en el servidor o funciones serverless (BFF) y **nunca se envían al navegador ni se exponen en el bundle**.
+
+| Variable | Descripción | Requerida |
+|---|---|---|
+| `ETHERFUSE_API_KEY` | API Key privada de Etherfuse (para autorización BFF hacia Etherfuse FX) | Sí (para on/offramp) |
+| `ETHERFUSE_BASE_URL` | URL base de Etherfuse FX (default: `https://api.sand.etherfuse.com`) | No |
+| `ETHERFUSE_CUSTOMER_ID` | UUID de organización en Etherfuse (inyectado server-side en cotizaciones) | No |
+| `ETHERFUSE_WALLET_ID` | UUID de wallet de plataforma en Etherfuse | No |
+| `TRUSTLESS_API_KEY` | API Key privada de Trustless Work para Testnet | Sí (para escrows testnet) |
+| `TRUSTLESS_API_KEY_MAINNET` | API Key privada de Trustless Work para Mainnet | Sí (para escrows mainnet) |
+| `TRUSTLESS_BASE_URL` | URL base de Trustless Work testnet (default: `https://dev.api.trustlesswork.com`) | No |
+| `TRUSTLESS_MAINNET_BASE_URL` | URL base de Trustless Work mainnet (default: `https://api.trustlesswork.com`) | No |
+| `PORT` | Puerto para el servidor Node BFF independiente (default: `3001`) | No |
 
 ---
 
@@ -85,6 +105,14 @@ VITE_SUPABASE_ANON_KEY=          # Anon key de Supabase
 ```bash
 npm install
 npm run dev
+```
+
+En modo desarrollo, el plugin de Vite inicializa automáticamente el middleware del BFF interceptando las rutas `/api/etherfuse/*` y `/api/trustless/*`, inyectando las claves de entorno sin exponerlas al cliente.
+
+Para ejecutar el servidor BFF de forma independiente:
+
+```bash
+npm run server
 ```
 
 ---

@@ -14,7 +14,6 @@ import {
   getOrder,
   simulateFiatReceived,
   USDC_STELLAR_ID,
-  KIVO_CUSTOMER_ID,
 } from '../services/etherfuse'
 import { useWallet } from '../context/WalletContext'
 
@@ -224,7 +223,6 @@ export function useRamp() {
 
       const q = await createQuote({
         quoteId,
-        customerId:    KIVO_CUSTOMER_ID,
         blockchain:    'stellar',
         cryptoWalletId,
         sourceAmount:  String(mxnAmount),
@@ -284,7 +282,6 @@ export function useRamp() {
 
       const q = await createQuote({
         quoteId,
-        customerId:    KIVO_CUSTOMER_ID,
         blockchain:    'stellar',
         cryptoWalletId,
         sourceAmount:  String(usdcAmount),

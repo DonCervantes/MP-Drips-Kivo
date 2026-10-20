@@ -20,5 +20,7 @@ jobs:
         working-directory: Kivo
       - run: npm run lint
         working-directory: Kivo
+      - run: npm run test
+        working-directory: Kivo
       - run: npm run build
         working-directory: Kivo
