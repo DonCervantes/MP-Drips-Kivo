@@ -1,12 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { ConnectButton } from 'accesly'
 import { useWallet } from './context/WalletContext'
 import { useLanguage } from './context/LanguageContext'
 import { useNetwork } from './context/NetworkContext'
-import { EscrowModal }       from './components/EscrowModal'
-import { EscrowDrawer }      from './components/EscrowDrawer'
-import { RampPage }          from './components/Ramp/RampPage'
-import { CreateOfferModal }  from './components/CreateOfferModal'
+import { EscrowModal     } from './components/EscrowModal'
+import { EscrowDrawer    } from './components/EscrowDrawer'
+import { RampPage          } from './components/Ramp/RampPage'
+import { CreateOfferModal  } from './components/CreateOfferModal'
+import { ReputationModal } from './components/ReputationModal'
+import { fetchReputation } from './lib/reputation'
 import './App.css'
 
 function shortenAddress(addr) {
@@ -14,9 +16,9 @@ function shortenAddress(addr) {
 }
 
 const LANGUAGES = [
-  { code: 'es', label: 'ES', flag: '🇲🇽' },
-  { code: 'en', label: 'EN', flag: '🇺🇸' },
-  { code: 'pt', label: 'PT', flag: '🇧🇷' },
+  { code: 'es', label: 'ES', flag: '🇼' },
+  { code: 'en', label: 'EN', flag: '🇺' },
+  { code: 'pt', label: 'PT', flag: '🇷' },
 ]
 
 export default function App() {
@@ -39,8 +41,41 @@ export default function App() {
   const [showDrawer, setShowDrawer] = useState(false)
   const [showRamp,   setShowRamp]   = useState(false)
   const [showOffer,  setShowOffer]  = useState(false)
+  const [showReput,  setShowReput]  = useState(false)
+
+  const [reput, setReput] = useState(null)
+  const [reputLoading, setReputLoading] = useState(false)
+  const [reputError, setReputError] = useState(null)
 
   const anyError = acceslyError || freighterError
+
+  const reputAddress = functionalAddress || null
+
+  useEffect(() => {
+    let cancelled = false
+    if (!reputAddress) {
+      setReput(null)
+      setReputError(null)
+      return
+    }
+    setReputLoading(true)
+    setReputError(null)
+    fetchReputation(reputAddress, network)
+      .then(data => { if (!cancelled) setReput(data) })
+      .catch(err => { if (!cancelled) setReputError(err.message || 'No se pudo cargar la reputación') })
+      .finally(() => { if (!cancelled) setReputLoading(false) })
+    return () => { cancelled = true }
+  }, [reputAddress, network])
+
+  const reputSummary = useMemo(() => {
+    if (!reput) return null
+    const total = reput.totalEscrows || 0
+    if (total === 0) return null
+    return {
+      completed: reput.completed,
+      disputeRate: reput.disputeRate,
+    }
+  }, [reput])
 
   return (
     <div className="app">
@@ -55,7 +90,7 @@ export default function App() {
         </div>
 
         <div className="nav-wallet">
-          {/* ── Language Selector ── */}
+          {/* — Language Selector ─ */}
           <div className="lang-selector">
             {LANGUAGES.map(l => (
               <button
@@ -90,6 +125,18 @@ export default function App() {
               </button>
               <button className="btn-my-escrows" onClick={() => setShowDrawer(true)}>
                 {t.nav.myEscrows}
+              </button>
+              <button
+                className="btn-my-escrows btn-reput"
+                onClick={() => setShowReput(true)}
+                title={t.reputation?.navBtn || 'Reputación'}
+              >
+                {t.reputation?.navBtn || 'Reputación'}
+                {reputSummary && (
+                  <span className="reput-badge">
+                    {reputSummary.completed} ✓
+                  </span>
+                )}
               </button>
             </>
           )}
@@ -170,12 +217,12 @@ export default function App() {
         <h2>{t.problem.title}</h2>
         <div className="two-col">
           <div className="card">
-            <div className="card-icon teal-icon">⬡</div>
+            <div className="card-icon teal-icon">⬝</div>
             <h3>{t.problem.card1Title}</h3>
             <p>{t.problem.card1Body}</p>
           </div>
           <div className="card">
-            <div className="card-icon gold-icon">⬡</div>
+            <div className="card-icon gold-icon">⬝</div>
             <h3>{t.problem.card2Title}</h3>
             <p>{t.problem.card2Body}</p>
           </div>
@@ -299,6 +346,17 @@ export default function App() {
         <EscrowDrawer
           walletAddress={walletAddress}
           onClose={() => setShowDrawer(false)}
+        />
+      )}
+
+      {/* ── REPUTATION MODAL ── */}
+      {showReput && (
+        <ReputationModal
+          address={reputAddress}
+          reputation={reput}
+          loading={reputLoading}
+          error={reputError}
+          onClose={() => setShowReput(false)}
         />
       )}
 

@@ -89,6 +89,77 @@ export function getMyRole(escrow, walletAddress) {
   return 'Participante'
 }
 
+/**
+ * Calcula métricas de reputación básica a partir de escrows finalizados.
+ * Solo considera escrows liberados o resueltos (finalizados).
+ * No introduce KYC: únicamente métricas derivadas de escrows.
+ *
+ * @param {Array} escrows - Lista de escrows del usuario.
+ * @param {string} walletAddress - Dirección de la wallet del usuario.
+ * @returns {{
+ *   completedOperations: number,
+ *   historicalVolume: number,
+ *   disputeRate: number,
+ *   averageReleaseTimeMs: number|null,
+ *   verificationSignals: { hasCompletedOperations: boolean, hasCleanDisputeRecord: boolean }
+ * }}
+ */
+export function getReputationMetrics(escrows, walletAddress) {
+  const list = Array.isArray(escrows) ? escrows : []
+  const addr = walletAddress?.toLowerCase()
+
+  const isFinalized = (e) => Boolean(e?.flags?.released || e?.flags?.resolved)
+  const isDisputed   = (e) => Boolean(e?.flags?.disputed || e?.flags?.resolved)
+
+  // Solo escrows finalizados cuentan para reputación
+  const finalized = list.filter(isFinalized)
+
+  const completedOperations = finalized.length
+
+  // Volumen histórico: suma de montos de escrows finalizados
+  const historicalVolume = finalized.reduce((sum, e) => {
+    const amount = Number(e?.amount ?? e?.balance ?? 0)
+    return sum + (Number.isFinite(amount) ? amount : 0)
+  }, 0)
+
+  // Tasa de disputas: disputas sobre operaciones finalizadas
+  const disputedCount = finalized.filter(isDisputed).length
+  const disputeRate = completedOperations > 0 ? disputedCount / completedOperations : 0
+
+  // Tiempo promedio de liberación (ms) entre creación y liberación
+  const releaseTimes = finalized
+    .filter(e => e?.flags?.released)
+    .map(e => {
+      const created = e?.createdAt?._seconds ?? e?.createdAt?.seconds
+      const released = e?.releasedAt?._seconds ?? e?.releasedAt?.seconds ?? e?.updatedAt?._seconds ?? e?.updatedAt?.seconds
+      if (typeof created !== 'number' || typeof released !== 'number') return null
+      const diff = (released - created) * 1000
+      return diff >= 0 ? diff : null
+    })
+    .filter(t => t !== null)
+
+  const averageReleaseTimeMs = releaseTimes.length > 0
+    ? releaseTimes.reduce((a, b) => a + b, 0) / releaseTimes.length
+    : null
+
+  // Señales de verificación opcionales (derivadas, sin KYC)
+  const verificationSignals = {
+    hasCompletedOperations: completedOperations > 0,
+    hasCleanDisputeRecord: completedOperations > 0 && disputeRate === 0,
+  }
+
+  // addr se mantiene para futuras métricas por rol; evita lint de variable sin uso
+  void addr
+
+  return {
+    completedOperations,
+    historicalVolume,
+    disputeRate,
+    averageReleaseTimeMs,
+    verificationSignals,
+  }
+}
+
 /** Resuelve el estado visible del escrow a partir de sus flags */
 export function getEscrowStatus(escrow) {
   const f = escrow?.flags ?? {}

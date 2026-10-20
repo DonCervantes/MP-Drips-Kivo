@@ -1,0 +1,18 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "feat/issue-77-reputaci-n-b-sica-de-vendedores-y-compradores",
+    "main",
+    "origin"
+  ],
+  "parent": {
+    "feat/issue-77-reputaci-n-b-sica-de-vendedores-y-compradores": "main",
+    "main": null,
+    "origin": "main"
+  },
+  "order": [
+    "main",
+    "feat/issue-77-reputaci-n-b-sica-de-vendedores-y-compradores",
+    "origin"
+  ]
+}
