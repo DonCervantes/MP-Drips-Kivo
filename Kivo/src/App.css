@@ -1029,6 +1029,146 @@ h2 {
 }
 
 /* ─────────────────────────────────────────
+   NAVBAR — Notificaciones
+───────────────────────────────────────── */
+.notif {
+  position: relative;
+}
+
+.notif-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: var(--teal-dim);
+  color: var(--teal);
+  border: 1px solid rgba(45,212,191,0.25);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.notif-btn:hover {
+  background: rgba(45,212,191,0.2);
+  border-color: rgba(45,212,191,0.45);
+}
+
+.notif-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+.notif-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 160;
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  max-height: 420px;
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.45);
+  overflow: hidden;
+}
+
+.notif-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.notif-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.notif-actions {
+  display: flex;
+  gap: 10px;
+}
+.notif-actions button {
+  background: none;
+  border: none;
+  color: var(--teal);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.notif-actions button:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
+.notif-empty {
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text);
+}
+.notif-empty-sub {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.notif-list {
+  list-style: none;
+  overflow-y: auto;
+}
+
+.notif-item {
+  display: flex;
+  gap: 10px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.notif-item:last-child { border-bottom: none; }
+.notif-unread { background: rgba(45,212,191,0.05); }
+
+.notif-dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  margin-top: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.notif-unread .notif-dot { background: var(--teal); }
+.notif-disputeOpened .notif-dot,
+.notif-rampFailed .notif-dot { background: #f87171; }
+
+.notif-msg {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.notif-time {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ─────────────────────────────────────────
    NAVBAR — Network toggle button
 ───────────────────────────────────────── */
 .btn-network-toggle {

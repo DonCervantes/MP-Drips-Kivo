@@ -31,37 +31,7 @@ export function useMyEscrows() {
     setError(null)
 
     try {
-      // Fetch en paralelo: como firmante Y como vendedor
-      const [asSigner, asServiceProvider] = await Promise.allSettled([
-        signerRef.current({ signer: walletAddress }),
-        roleRef.current({ role: 'serviceProvider', roleAddress: walletAddress }),
-      ])
-
-      const merge = []
-
-      if (asSigner.status === 'fulfilled' && Array.isArray(asSigner.value)) {
-        merge.push(...asSigner.value)
-      }
-      if (asServiceProvider.status === 'fulfilled' && Array.isArray(asServiceProvider.value)) {
-        merge.push(...asServiceProvider.value)
-      }
-
-      // Deduplicar por engagementId
-      const seen = new Set()
-      const unique = merge.filter(e => {
-        const key = e.engagementId || e.contractId
-        if (seen.has(key)) return false
-        seen.add(key)
-        return true
-      })
-
-      // Más reciente primero
-      unique.sort((a, b) => {
-        const ta = a.createdAt?._seconds ?? 0
-        const tb = b.createdAt?._seconds ?? 0
-        return tb - ta
-      })
-
+      const unique = await fetchEscrowsForWallet(signerRef.current, roleRef.current, walletAddress)
       setEscrows(unique)
     } catch (err) {
       setError(err?.message || 'Error al cargar los escrows.')
@@ -73,6 +43,54 @@ export function useMyEscrows() {
   }, [])
 
   return { escrows, loading, error, fetchEscrows }
+}
+
+/**
+ * Trae del indexer todos los escrows de walletAddress (como firmante y como
+ * vendedor), desduplicados y del más reciente al más antiguo.
+ * Se comparte con NotificationsContext para no duplicar la consulta.
+ *
+ * Con `strict: true` lanza error si ambas consultas fallan, en lugar de
+ * devolver una lista vacía (las notificaciones no deben confundir un fallo
+ * del indexer con "no tienes escrows").
+ */
+export async function fetchEscrowsForWallet(getEscrowsBySigner, getEscrowsByRole, walletAddress, { strict = false } = {}) {
+  // Fetch en paralelo: como firmante Y como vendedor
+  const [asSigner, asServiceProvider] = await Promise.allSettled([
+    getEscrowsBySigner({ signer: walletAddress }),
+    getEscrowsByRole({ role: 'serviceProvider', roleAddress: walletAddress }),
+  ])
+
+  if (strict && asSigner.status === 'rejected' && asServiceProvider.status === 'rejected') {
+    throw asSigner.reason
+  }
+
+  const merge = []
+
+  if (asSigner.status === 'fulfilled' && Array.isArray(asSigner.value)) {
+    merge.push(...asSigner.value)
+  }
+  if (asServiceProvider.status === 'fulfilled' && Array.isArray(asServiceProvider.value)) {
+    merge.push(...asServiceProvider.value)
+  }
+
+  // Deduplicar por engagementId
+  const seen = new Set()
+  const unique = merge.filter(e => {
+    const key = e.engagementId || e.contractId
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+
+  // Más reciente primero
+  unique.sort((a, b) => {
+    const ta = a.createdAt?._seconds ?? 0
+    const tb = b.createdAt?._seconds ?? 0
+    return tb - ta
+  })
+
+  return unique
 }
 
 /** Determina el rol principal del usuario en un escrow */

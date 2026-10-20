@@ -273,6 +273,42 @@ export const translations = {
       successStep2: 'Financia el escrow con',
       successStep3: 'Aprueba cuando el vendedor entregue',
     },
+
+    notifications: {
+      open: 'Notificaciones',
+      title: 'Notificaciones',
+      empty: 'Sin notificaciones por ahora',
+      emptySub: 'Te avisaremos cuando cambie el estado de tus escrows u órdenes ramp.',
+      markAllRead: 'Marcar leídas',
+      clear: 'Borrar',
+      untitled: 'Sin título',
+      events: {
+        escrowCreated: {
+          buyer:  'Escrow "{title}" creado — listo para fondear',
+          seller: 'Un comprador creó el escrow "{title}" — falta que lo fondee',
+          other:  'Escrow "{title}" creado — listo para fondear',
+        },
+        fundsReceived: {
+          buyer:  'Fondos depositados en "{title}"',
+          seller: '"{title}" ya tiene fondos — puedes entregar',
+          other:  'Fondos recibidos en "{title}"',
+        },
+        milestoneApproved: {
+          buyer:  'Aprobaste el hito de "{title}"',
+          seller: 'El comprador aprobó el hito de "{title}"',
+          other:  'Hito aprobado en "{title}"',
+        },
+        fundsReleased: {
+          buyer:  'Fondos de "{title}" liberados al vendedor',
+          seller: 'Fondos de "{title}" liberados — revisa tu wallet',
+          other:  'Fondos liberados en "{title}"',
+        },
+        disputeOpened:   'Disputa abierta en "{title}"',
+        disputeResolved: 'Disputa resuelta en "{title}"',
+        rampCompleted:   'Tu orden On/Off Ramp se completó',
+        rampFailed:      'Tu orden On/Off Ramp falló o fue cancelada',
+      },
+    },
   },
 
   en: {
@@ -535,6 +571,42 @@ export const translations = {
       successStep2: 'Fund the escrow with',
       successStep3: 'Approve when the seller delivers',
     },
+
+    notifications: {
+      open: 'Notifications',
+      title: 'Notifications',
+      empty: 'No notifications yet',
+      emptySub: "We'll let you know when your escrows or ramp orders change status.",
+      markAllRead: 'Mark as read',
+      clear: 'Clear',
+      untitled: 'Untitled',
+      events: {
+        escrowCreated: {
+          buyer:  'Escrow "{title}" created — ready to fund',
+          seller: 'A buyer created escrow "{title}" — waiting for funding',
+          other:  'Escrow "{title}" created — ready to fund',
+        },
+        fundsReceived: {
+          buyer:  'Funds deposited in "{title}"',
+          seller: '"{title}" is funded — you can deliver',
+          other:  'Funds received in "{title}"',
+        },
+        milestoneApproved: {
+          buyer:  'You approved the milestone of "{title}"',
+          seller: 'The buyer approved the milestone of "{title}"',
+          other:  'Milestone approved in "{title}"',
+        },
+        fundsReleased: {
+          buyer:  'Funds of "{title}" released to the seller',
+          seller: 'Funds of "{title}" released — check your wallet',
+          other:  'Funds released in "{title}"',
+        },
+        disputeOpened:   'Dispute opened in "{title}"',
+        disputeResolved: 'Dispute resolved in "{title}"',
+        rampCompleted:   'Your On/Off Ramp order completed',
+        rampFailed:      'Your On/Off Ramp order failed or was cancelled',
+      },
+    },
   },
 
   pt: {
@@ -796,6 +868,42 @@ export const translations = {
       successStep1: 'Escrow implantado na Stellar',
       successStep2: 'Financie o escrow com',
       successStep3: 'Aprove quando o vendedor entregar',
+    },
+
+    notifications: {
+      open: 'Notificações',
+      title: 'Notificações',
+      empty: 'Nenhuma notificação por enquanto',
+      emptySub: 'Avisaremos quando seus escrows ou ordens ramp mudarem de status.',
+      markAllRead: 'Marcar como lidas',
+      clear: 'Limpar',
+      untitled: 'Sem título',
+      events: {
+        escrowCreated: {
+          buyer:  'Escrow "{title}" criado — pronto para financiar',
+          seller: 'Um comprador criou o escrow "{title}" — aguardando financiamento',
+          other:  'Escrow "{title}" criado — pronto para financiar',
+        },
+        fundsReceived: {
+          buyer:  'Fundos depositados em "{title}"',
+          seller: '"{title}" já tem fundos — você pode entregar',
+          other:  'Fundos recebidos em "{title}"',
+        },
+        milestoneApproved: {
+          buyer:  'Você aprovou o marco de "{title}"',
+          seller: 'O comprador aprovou o marco de "{title}"',
+          other:  'Marco aprovado em "{title}"',
+        },
+        fundsReleased: {
+          buyer:  'Fundos de "{title}" liberados ao vendedor',
+          seller: 'Fundos de "{title}" liberados — confira sua carteira',
+          other:  'Fundos liberados em "{title}"',
+        },
+        disputeOpened:   'Disputa aberta em "{title}"',
+        disputeResolved: 'Disputa resolvida em "{title}"',
+        rampCompleted:   'Sua ordem On/Off Ramp foi concluída',
+        rampFailed:      'Sua ordem On/Off Ramp falhou ou foi cancelada',
+      },
     },
   },
 }

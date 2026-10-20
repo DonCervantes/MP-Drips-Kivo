@@ -7,6 +7,7 @@ import { EscrowModal }       from './components/EscrowModal'
 import { EscrowDrawer }      from './components/EscrowDrawer'
 import { RampPage }          from './components/Ramp/RampPage'
 import { CreateOfferModal }  from './components/CreateOfferModal'
+import { NotificationBell }  from './components/NotificationBell'
 import './App.css'
 
 function shortenAddress(addr) {
@@ -91,6 +92,7 @@ export default function App() {
               <button className="btn-my-escrows" onClick={() => setShowDrawer(true)}>
                 {t.nav.myEscrows}
               </button>
+              <NotificationBell />
             </>
           )}
 

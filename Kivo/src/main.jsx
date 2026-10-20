@@ -5,6 +5,7 @@ import { TrustlessWorkProvider } from './provider/TrustlessWorkProvider'
 import { AcceslyProvider } from 'accesly'
 import { WalletProvider } from './context/WalletContext'
 import { LanguageProvider } from './context/LanguageContext'
+import { NotificationsProvider } from './context/NotificationsContext'
 import './index.css'
 import App from './App.jsx'
 import { BuyPage } from './pages/BuyPage.jsx'
@@ -24,7 +25,9 @@ createRoot(document.getElementById('root')).render(
           {/* WalletProvider debe estar dentro de AcceslyProvider para usar useAccesly */}
           <WalletProvider>
             <LanguageProvider>
-              {isBuyPage ? <BuyPage /> : <App />}
+              <NotificationsProvider>
+                {isBuyPage ? <BuyPage /> : <App />}
+              </NotificationsProvider>
             </LanguageProvider>
           </WalletProvider>
         </AcceslyProvider>

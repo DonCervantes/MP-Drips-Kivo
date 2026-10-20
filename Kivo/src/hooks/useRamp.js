@@ -17,6 +17,8 @@ import {
   KIVO_CUSTOMER_ID,
 } from '../services/etherfuse'
 import { useWallet } from '../context/WalletContext'
+import { useNotifications } from './useNotifications'
+import { rampEvent } from '../lib/notifications'
 
 const POLLING_INTERVAL_MS = 3_000
 const QUOTE_TTL_MS = 120_000
@@ -189,6 +191,16 @@ export function useRamp() {
 
   // Limpiar polling al desmontar
   useEffect(() => stopPolling, [])
+
+  // Notificar cuando una orden termina (completada o fallida)
+  const notifications = useNotifications()
+  const notifyRef = useRef(notifications?.notify)
+  useEffect(() => { notifyRef.current = notifications?.notify })
+  useEffect(() => {
+    if (!order?.orderId) return
+    const ev = rampEvent(status, order)
+    if (ev) notifyRef.current?.(ev)
+  }, [status, order])
 
   async function ensureWalletId(address) {
     if (walletIdCache.current[address]) return walletIdCache.current[address]
