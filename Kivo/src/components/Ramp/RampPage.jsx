@@ -10,7 +10,7 @@ import './Ramp.css'
 
 export function RampPage({ onClose }) {
   const [tab, setTab]             = useState('onramp')
-  const [bankAccountId, setBankAccountId] = useState(null)
+  const [onrampBankAccountId, setOnrampBankAccountId] = useState(null)
 
   const { walletAddress } = useWallet()
   const { t } = useLanguage()
@@ -22,7 +22,7 @@ export function RampPage({ onClose }) {
     listBankAccounts()
       .then(data => {
         const accounts = data?.bankAccounts ?? data?.items ?? (Array.isArray(data) ? data : [])
-        if (accounts.length > 0) setBankAccountId(accounts[0].id ?? accounts[0].bankAccountId)
+        if (accounts.length > 0) setOnrampBankAccountId(accounts[0].id ?? accounts[0].bankAccountId)
       })
       .catch(() => {})
   }, [])
@@ -36,8 +36,8 @@ export function RampPage({ onClose }) {
     return () => clearTimeout(timer)
   }, [status, reset])
 
-  function handleOnramp(mxnAmount) { startOnramp(mxnAmount, bankAccountId) }
-  function handleOfframp(usdcAmount) { startOfframp(usdcAmount, bankAccountId) }
+  function handleOnramp(mxnAmount) { startOnramp(mxnAmount, onrampBankAccountId) }
+  function handleOfframp(usdcAmount, bankAccountId) { startOfframp(usdcAmount, bankAccountId) }
 
   return (
     <div className="ramp-overlay" onClick={ev => { if (ev.target === ev.currentTarget) onClose() }}>
@@ -94,7 +94,6 @@ export function RampPage({ onClose }) {
                 onSubmit={handleOfframp}
                 loading={status === 'creating'}
                 error={status === 'error' ? error : null}
-                bankAccountId={bankAccountId}
               />
             )}
           </>

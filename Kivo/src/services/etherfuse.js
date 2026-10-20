@@ -75,6 +75,11 @@ export function listBankAccounts() {
   return request('/ramp/bank-accounts')
 }
 
+/** Accepts only an explicitly supplied Etherfuse payment-account identifier. */
+export function isValidBankAccountId(bankAccountId) {
+  return typeof bankAccountId === 'string' && bankAccountId.trim().length > 0
+}
+
 // ── Assets ────────────────────────────────────────────────────────────────────
 
 /**
@@ -126,7 +131,7 @@ export function createQuote({ quoteId, customerId, blockchain, cryptoWalletId, s
  * {
  *   orderId        : string (UUID — idempotency key, generado por el cliente)
  *   quoteId        : string
- *   bankAccountId  : string
+ *   bankAccountId  : string (the account selected for this order)
  *   cryptoWalletId : string
  * }
  *
