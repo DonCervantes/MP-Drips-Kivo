@@ -815,7 +815,8 @@ h2 {
 }
 
 .form-field input,
-.form-field textarea {
+.form-field textarea,
+.form-field select {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 9px;
@@ -832,7 +833,8 @@ h2 {
 .form-field textarea::placeholder { color: var(--muted); opacity: 0.6; }
 
 .form-field input:focus,
-.form-field textarea:focus {
+.form-field textarea:focus,
+.form-field select:focus {
   border-color: rgba(212,166,71,0.4);
 }
 
@@ -1932,4 +1934,68 @@ h2 {
   color: var(--teal);
   font-weight: 600;
   font-size: 0.95rem;
+}
+
+/* ─────────────────────────────────────────
+   PLANTILLAS DE ESCROW
+───────────────────────────────────────── */
+.template-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--teal-dim);
+  border: 1px solid rgba(45,212,191,0.18);
+  border-radius: 10px;
+}
+
+.template-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.template-select,
+.template-name {
+  flex: 1 1 180px;
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: inherit;
+  outline: none;
+}
+.template-select:disabled { color: var(--muted); }
+.template-select:focus,
+.template-name:focus { border-color: rgba(212,166,71,0.4); }
+
+.template-btn {
+  padding: 7px 12px;
+  background: transparent;
+  color: var(--teal);
+  border: 1px solid rgba(45,212,191,0.35);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.template-btn:hover:not(:disabled) { background: rgba(45,212,191,0.15); }
+.template-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.template-btn--ghost { color: var(--muted); border-color: var(--border); }
+.template-btn--danger { color: #f87171; border-color: rgba(248,113,113,0.35); }
+.template-btn--danger:hover:not(:disabled) { background: rgba(248,113,113,0.12); }
+
+.template-msg { font-size: 12px; }
+.template-msg--ok { color: var(--teal); }
+.template-msg--error { color: #f87171; }
+
+.buy-expiry {
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: var(--muted);
 }

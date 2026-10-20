@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useEscrowFlow } from '../hooks/useEscrowFlow'
 import { useLanguage } from '../context/LanguageContext'
+import { useEscrowTemplates } from '../hooks/useEscrowTemplates'
+import { TemplatePicker } from './TemplatePicker'
+import { applyTemplateToEscrowForm, templateFromEscrowForm } from '../lib/escrowTemplates'
 
 function shortenAddress(addr) {
   if (!addr) return ''
@@ -22,6 +25,8 @@ export function EscrowModal({ walletAddress, onClose }) {
     amount:          '',
     platformFee:     '1',
   })
+
+  const { templates, save, remove } = useEscrowTemplates(walletAddress)
 
   function handleChange(ev) {
     setForm(prev => ({ ...prev, [ev.target.name]: ev.target.value }))
@@ -77,6 +82,15 @@ export function EscrowModal({ walletAddress, onClose }) {
           <span className="modal-wallet-label">{e.clientLabel}</span>
           <code className="modal-wallet-addr">{shortenAddress(walletAddress)}</code>
         </div>
+
+        {/* Plantillas */}
+        <TemplatePicker
+          templates={templates}
+          onApply={tpl => setForm(prev => applyTemplateToEscrowForm(tpl, prev))}
+          onSave={name => save(templateFromEscrowForm(name, form))}
+          onDelete={remove}
+          canSave={Boolean(form.title.trim())}
+        />
 
         {/* Campos del escrow */}
         <div className="form-grid">

@@ -2,6 +2,14 @@ import { useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { useWallet } from '../context/WalletContext'
 import { useLanguage } from '../context/LanguageContext'
+import { useEscrowTemplates } from '../hooks/useEscrowTemplates'
+import { TemplatePicker } from './TemplatePicker'
+import {
+  EXPIRY_OPTIONS,
+  applyTemplateToOfferForm,
+  offerExpiresAt,
+  templateFromOfferForm,
+} from '../lib/escrowTemplates'
 
 function shortenAddress(addr) {
   if (!addr) return ''
@@ -12,15 +20,20 @@ export function CreateOfferModal({ onClose }) {
   const { walletAddress } = useWallet()
   const { t, lang } = useLanguage()
   const o = t.offer
+  const tp = t.templates
 
   const [form, setForm] = useState({
-    title:    '',
-    desc:     '',
-    amount:   '',
-    resolver: '',
+    title:       '',
+    desc:        '',
+    amount:      '',
+    resolver:    '',
+    expiryHours: 0,
   })
 
+  const { templates, save, remove } = useEscrowTemplates(walletAddress)
+
   const [offerUrl, setOfferUrl] = useState(null)
+  const [expiresAt, setExpiresAt] = useState(null)
   const [copied,   setCopied]   = useState(false)
 
   function handleChange(ev) {
@@ -37,6 +50,9 @@ export function CreateOfferModal({ onClose }) {
     url.searchParams.set('lang',   lang)
     if (form.desc)     url.searchParams.set('desc',     form.desc)
     if (form.resolver) url.searchParams.set('resolver', form.resolver)
+    const exp = offerExpiresAt(form.expiryHours)
+    if (exp) url.searchParams.set('exp', String(exp))
+    setExpiresAt(exp)
     setOfferUrl(url.toString())
     setCopied(false)
   }
@@ -78,6 +94,14 @@ export function CreateOfferModal({ onClose }) {
                 <span className="buy-detail-label">{o.qrSeller}</span>
                 <code className="modal-wallet-addr">{shortenAddress(walletAddress)}</code>
               </div>
+              <div className="buy-detail-row">
+                <span className="buy-detail-label">{tp.linkExpiry}</span>
+                <span style={{ color: 'var(--text)' }}>
+                  {expiresAt
+                    ? new Date(expiresAt).toLocaleString(t.drawer.dateLocale)
+                    : tp.expiryOptions[0]}
+                </span>
+              </div>
             </div>
 
             <div className="contract-id-box" style={{ width: '100%' }}>
@@ -118,6 +142,14 @@ export function CreateOfferModal({ onClose }) {
           <span className="modal-wallet-label">{o.sellerLabel}</span>
           <code className="modal-wallet-addr">{shortenAddress(walletAddress)}</code>
         </div>
+
+        <TemplatePicker
+          templates={templates}
+          onApply={tpl => setForm(prev => applyTemplateToOfferForm(tpl, prev))}
+          onSave={name => save(templateFromOfferForm(name, form))}
+          onDelete={remove}
+          canSave={Boolean(form.title.trim())}
+        />
 
         <div className="form-grid">
           <div className="form-field">
@@ -190,6 +222,19 @@ export function CreateOfferModal({ onClose }) {
               value={form.resolver}
               onChange={handleChange}
             />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">{tp.linkExpiry}</label>
+            <select
+              name="expiryHours"
+              value={form.expiryHours}
+              onChange={ev => setForm(prev => ({ ...prev, expiryHours: Number(ev.target.value) }))}
+            >
+              {EXPIRY_OPTIONS.map((h, i) => (
+                <option key={h} value={h}>{tp.expiryOptions[i]}</option>
+              ))}
+            </select>
           </div>
         </div>
 

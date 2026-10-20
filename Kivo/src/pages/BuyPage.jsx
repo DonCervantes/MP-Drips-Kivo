@@ -3,6 +3,7 @@ import { ConnectButton } from 'accesly'
 import { useWallet } from '../context/WalletContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useEscrowFlow } from '../hooks/useEscrowFlow'
+import { offerExpiryState } from '../lib/escrowTemplates'
 
 function shortenAddress(addr) {
   if (!addr) return ''
@@ -17,6 +18,7 @@ export function BuyPage() {
   const desc     = params.get('desc')     || title
   const resolver = params.get('resolver') || seller
   const langParam = params.get('lang')
+  const { expiresAt, expired } = offerExpiryState(params.get('exp'))
 
   const { t, setLang } = useLanguage()
   const b = t.buy
@@ -39,7 +41,7 @@ export function BuyPage() {
   const { createEscrow, loading, error, result } = useEscrowFlow()
 
   async function handleBuy() {
-    if (!walletAddress) return
+    if (!walletAddress || expired) return
     await createEscrow(
       {
         title,
@@ -115,9 +117,19 @@ export function BuyPage() {
             <div className="flow-step"><span className="flow-n">3</span> {b.step3}</div>
           </div>
 
+          {expiresAt && !expired && (
+            <p className="buy-expiry">
+              {t.templates.expiresOn} {new Date(expiresAt).toLocaleString(t.drawer.dateLocale)}
+            </p>
+          )}
+
           {error && <div className="modal-error">{error}</div>}
 
-          {walletAddress ? (
+          {expired ? (
+            <div className="modal-error">
+              <strong>{t.templates.expiredTitle}</strong> {t.templates.expiredBody}
+            </div>
+          ) : walletAddress ? (
             <>
               <div className="modal-wallet-row" style={{ marginBottom: '1rem' }}>
                 <span className="status-dot" />
