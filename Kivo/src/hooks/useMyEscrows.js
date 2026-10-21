@@ -6,7 +6,7 @@ import {
 
 /**
  * Devuelve todos los escrows relacionados con walletAddress,
- * sin importar el rol (creador, vendedor, etc.).
+ * sin importar el rol (creador, vendedor, receptor, árbitro, etc.).
  * Desduplicados por engagementId.
  */
 export function useMyEscrows() {
@@ -31,20 +31,22 @@ export function useMyEscrows() {
     setError(null)
 
     try {
-      // Fetch en paralelo: como firmante Y como vendedor
-      const [asSigner, asServiceProvider] = await Promise.allSettled([
+      // Fetch en paralelo: firmante, vendedor, receptor, árbitro y comprador
+      const results = await Promise.allSettled([
         signerRef.current({ signer: walletAddress }),
         roleRef.current({ role: 'serviceProvider', roleAddress: walletAddress }),
+        roleRef.current({ role: 'receiver', roleAddress: walletAddress }),
+        roleRef.current({ role: 'disputeResolver', roleAddress: walletAddress }),
+        roleRef.current({ role: 'approver', roleAddress: walletAddress }),
       ])
 
       const merge = []
 
-      if (asSigner.status === 'fulfilled' && Array.isArray(asSigner.value)) {
-        merge.push(...asSigner.value)
-      }
-      if (asServiceProvider.status === 'fulfilled' && Array.isArray(asServiceProvider.value)) {
-        merge.push(...asServiceProvider.value)
-      }
+      results.forEach(result => {
+        if (result.status === 'fulfilled' && Array.isArray(result.value)) {
+          merge.push(...result.value)
+        }
+      })
 
       // Deduplicar por engagementId
       const seen = new Set()
