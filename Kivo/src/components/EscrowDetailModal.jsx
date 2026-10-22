@@ -78,21 +78,33 @@ export function EscrowDetailModal({ escrow, walletAddress, onClose, onActionDone
   }
 
   async function handleFund() {
-    await fundEscrow(escrow.contractId, fundAmount, walletAddress)
-    setActionDone('funded')
-    onActionDone?.()
+    try {
+      await fundEscrow(escrow.contractId, fundAmount, walletAddress)
+      setActionDone('funded')
+      onActionDone?.()
+    } catch {
+      /* error already set by hook */
+    }
   }
 
   async function handleApprove() {
-    await approveMilestone(escrow.contractId, 0, walletAddress)
-    setActionDone('approved')
-    onActionDone?.()
+    try {
+      await approveMilestone(escrow.contractId, 0, walletAddress)
+      setActionDone('approved')
+      onActionDone?.()
+    } catch {
+      /* error already set by hook */
+    }
   }
 
   async function handleRelease() {
-    await releaseFunds(escrow.contractId, walletAddress)
-    setActionDone('released')
-    onActionDone?.()
+    try {
+      await releaseFunds(escrow.contractId, walletAddress)
+      setActionDone('released')
+      onActionDone?.()
+    } catch {
+      /* error already set by hook */
+    }
   }
 
   return (

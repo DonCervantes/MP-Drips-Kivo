@@ -40,19 +40,23 @@ export function BuyPage() {
 
   async function handleBuy() {
     if (!walletAddress) return
-    await createEscrow(
-      {
-        title,
-        description:     desc,
-        milestoneDesc:   desc,
-        serviceProvider: seller,
-        receiver:        seller,
-        disputeResolver: resolver,
-        amount,
-        platformFee:     '1',
-      },
-      walletAddress,
-    )
+    try {
+      await createEscrow(
+        {
+          title,
+          description:     desc,
+          milestoneDesc:   desc,
+          serviceProvider: seller,
+          receiver:        seller,
+          disputeResolver: resolver,
+          amount,
+          platformFee:     '1',
+        },
+        walletAddress,
+      )
+    } catch {
+      /* error already set by hook */
+    }
   }
 
   /* ── Éxito ── */

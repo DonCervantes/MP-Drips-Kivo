@@ -29,7 +29,11 @@ export function EscrowModal({ walletAddress, onClose }) {
 
   async function handleSubmit(ev) {
     ev.preventDefault()
-    await createEscrow(form, walletAddress)
+    try {
+      await createEscrow(form, walletAddress)
+    } catch {
+      /* error already set by hook */
+    }
   }
 
   // ── Estado: éxito ────────────────────────────────────────────────────────
