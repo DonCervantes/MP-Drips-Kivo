@@ -11,6 +11,29 @@
 const API_KEY  = import.meta.env.VITE_ETHERFUSE_API_KEY
 const BASE_URL = import.meta.env.VITE_ETHERFUSE_BASE_URL || 'https://api.sand.etherfuse.com'
 
+/**
+ * Sandbox de Etherfuse. Solo contra este host se permite simular pagos fiat.
+ * Cualquier otro host (p. ej. producción) nunca debe disparar `fiat_received`.
+ */
+const SANDBOX_HOST = 'api.sand.etherfuse.com'
+
+/**
+ * La simulación de fiat solo corre si:
+ *  1. El entorno es local explícito (`import.meta.env.DEV`).
+ *  2. El flag `VITE_ETHERFUSE_SIMULATE_FIAT` está en `'true'`.
+ *  3. El `BASE_URL` apunta al sandbox de Etherfuse.
+ * Nunca por el solo hecho de `DEV`, para evitar previews mal configurados.
+ */
+export function canSimulateFiat() {
+  if (!import.meta.env.DEV) return false
+  if (import.meta.env.VITE_ETHERFUSE_SIMULATE_FIAT !== 'true') return false
+  try {
+    return new URL(BASE_URL).host === SANDBOX_HOST
+  } catch {
+    return false
+  }
+}
+
 export const USDC_STELLAR_ID =
   'USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'
 
@@ -154,8 +177,15 @@ export function getOrder(orderId) {
 /**
  * Simula la recepción del pago fiat (solo sandbox).
  * Debe llamarse después de crear una orden de onramp en estado 'created'.
+ *
+ * Guardas de seguridad: solo se permite en sandbox Etherfuse y entorno local
+ * explícito (DEV + VITE_ETHERFUSE_SIMULATE_FIAT=true). En producción/preview
+ * lanza un error para que nunca se dispare `fiat_received` accidentalmente.
  */
 export function simulateFiatReceived(orderId) {
+  if (!canSimulateFiat()) {
+    throw new Error('simulateFiatReceived solo está permitido en sandbox local explícito')
+  }
   return request('/ramp/order/fiat_received', {
     method: 'POST',
     body: JSON.stringify({ orderId }),
