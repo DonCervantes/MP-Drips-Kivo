@@ -8,6 +8,7 @@ import {
 } from '@trustless-work/escrow/hooks'
 import { useWallet } from '../context/WalletContext'
 import { useNetwork } from '../context/NetworkContext'
+import { PublicKey } from '@stellar/stellar-sdk'
 
 const USDC_TESTNET = {
   symbol: 'USDC',
@@ -16,10 +17,22 @@ const USDC_TESTNET = {
 
 const USDC_MAINNET = {
   symbol: 'USDC',
-  address: 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
+  address: 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN'
 }
 
-const KIVO_PLATFORM_ADDRESS = import.meta.env.VITE_KIVO_PLATFORM_ADDRESS || ''
+let KIVO_PLATFORM_ADDRESS = import.meta.env.VITE_KIVO_PLATFORM_ADDRESS
+
+function validatePlatformAddress(address) {
+  if (!address || typeof address !== 'string' || address.trim() === '') {
+    return false
+  }
+  try {
+    new PublicKey(address)
+    return true
+  } catch {
+    return false
+  }
+}
 
 /**
  * Extrae el mensaje de error real de una respuesta Axios 4xx/5xx.
@@ -52,7 +65,16 @@ export function useEscrowFlow() {
     setLoading(true)
     setError(null)
     setResult(null)
+
     try {
+      if (!KIVO_PLATFORM_ADDRESS || !validatePlatformAddress(KIVO_PLATFORM_ADDRESS)) {
+        const msg = 'VITE_KIVO_PLATFORM_ADDRESS es obligatorio y debe ser una dirección pública de Stellar válida.'
+        setError(msg)
+        throw new Error(msg)
+      }
+
+      const validatedPlatformAddress = KIVO_PLATFORM_ADDRESS
+
       const engagementId = typeof crypto !== 'undefined' && crypto.randomUUID
         ? crypto.randomUUID()
         : `kivo-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
@@ -67,7 +89,7 @@ export function useEscrowFlow() {
         roles: {
           approver:        walletAddress,
           serviceProvider: formData.serviceProvider,
-          platformAddress: KIVO_PLATFORM_ADDRESS || walletAddress,
+          platformAddress: validatedPlatformAddress,
           releaseSigner:   walletAddress,
           disputeResolver: formData.disputeResolver,
           receiver:        formData.receiver || formData.serviceProvider,

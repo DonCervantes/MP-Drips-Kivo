@@ -1,0 +1,18 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "fix/71-validate-platform-address",
+    "main",
+    "origin"
+  ],
+  "parent": {
+    "fix/71-validate-platform-address": "main",
+    "main": null,
+    "origin": "main"
+  },
+  "order": [
+    "main",
+    "fix/71-validate-platform-address",
+    "origin"
+  ]
+}
