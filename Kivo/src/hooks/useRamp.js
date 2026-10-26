@@ -82,11 +82,11 @@ function newUUID() {
  * POST /ramp/order devuelve  { onramp: {...} } o { offramp: {...} }
  * GET  /ramp/order/:id devuelve el objeto plano directamente.
  */
-function normalizeOrder(raw) {
+export function normalizeOrder(raw) {
   return raw?.onramp ?? raw?.offramp ?? raw ?? {}
 }
 
-function statusFromOrder(order) {
+export function statusFromOrder(order) {
   const s = (order?.status ?? '').toLowerCase()
   if (s === 'completed') return 'completed'
   if (s === 'failed' || s === 'cancelled') return 'error'

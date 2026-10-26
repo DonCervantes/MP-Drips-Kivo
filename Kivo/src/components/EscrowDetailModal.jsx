@@ -4,17 +4,17 @@ import { useLanguage } from '../context/LanguageContext'
 
 const ROLES_KEYS = ['approver', 'serviceProvider', 'releaseSigner', 'disputeResolver', 'receiver', 'platformAddress']
 
-function shorten(addr, s = 8, e = 6) {
+export function shorten(addr, s = 8, e = 6) {
   if (!addr) return '—'
   return `${addr.slice(0, s)}...${addr.slice(-e)}`
 }
 
-function isMe(addr, walletAddress) {
-  return addr && walletAddress && addr.toLowerCase() === walletAddress.toLowerCase()
+export function isMe(addr, walletAddress) {
+  return Boolean(addr && walletAddress && addr.toLowerCase() === walletAddress.toLowerCase())
 }
 
 /** Devuelve la clave del estado a partir de los flags del escrow */
-function getStatusKey(escrow) {
+export function getStatusKey(escrow) {
   const f = escrow?.flags ?? {}
   if (f.released) return 'released'
   if (f.resolved) return 'resolved'
@@ -29,7 +29,7 @@ function getStatusKey(escrow) {
  *   2. Aprobar   (approver,      balance > 0 y hito sin aprobar)
  *   3. Liberar   (releaseSigner, balance > 0 y todos los hitos aprobados)
  */
-function getActions(escrow, walletAddress) {
+export function getActions(escrow, walletAddress) {
   const flags        = escrow?.flags ?? {}
   const roles        = escrow?.roles ?? {}
   const balance      = Number(escrow?.balance ?? 0)

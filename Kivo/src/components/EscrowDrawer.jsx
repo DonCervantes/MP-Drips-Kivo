@@ -4,12 +4,12 @@ import { EscrowDetailModal } from './EscrowDetailModal'
 import { useLanguage } from '../context/LanguageContext'
 
 // Shortens Stellar public keys (G + 55 chars)
-const shorten = (address, start = 6, end = 4) => {
+export const shorten = (address, start = 6, end = 4) => {
   if (!address || address.length < 10) return address;
   return `${address.slice(0, start)}...${address.slice(-end)}`;
 };
 
-function formatDate(d, locale) {
+export function formatDate(d, locale) {
   if (!d?._seconds) return '—'
   return new Date(d._seconds * 1000).toLocaleDateString(locale, {
     day: '2-digit', month: 'short', year: 'numeric',
@@ -17,7 +17,7 @@ function formatDate(d, locale) {
 }
 
 /** Devuelve la clave del estado a partir de los flags del escrow */
-function getStatusKey(escrow) {
+export function getStatusKey(escrow) {
   const f = escrow?.flags ?? {}
   if (f.released) return 'released'
   if (f.resolved) return 'resolved'
@@ -27,7 +27,7 @@ function getStatusKey(escrow) {
 }
 
 /** Devuelve la clave del rol del usuario en el escrow */
-function getRoleKey(escrow, walletAddress) {
+export function getRoleKey(escrow, walletAddress) {
   if (!escrow?.roles || !walletAddress) return null
   const r = escrow.roles
   const addr = walletAddress.toLowerCase()
