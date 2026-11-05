@@ -24,6 +24,8 @@ const ORDER_STALE_MS = 10 * 60 * 1_000   // 10 min → descartar orden atascada
 const HORIZON_TESTNET = 'https://horizon-testnet.stellar.org'
 const IS_DEV = import.meta.env.DEV
 const LS_KEY = 'kivo_ramp_active_order'
+// Simulación de fiat SOLO en sandbox Etherfuse + local explícito (nunca por DEV solo)
+const SIMULATE_FIAT = import.meta.env.VITE_ETHERFUSE_SIMULATE_FIAT === 'true'
 
 // USDC en Stellar testnet (mismo que USDC_STELLAR_ID)
 const [USDC_CODE, USDC_ISSUER] = USDC_STELLAR_ID.split(':')
@@ -256,7 +258,7 @@ export function useRamp() {
       // Persistir para sobrevivir cierres de modal
       localStorage.setItem(LS_KEY, JSON.stringify({ orderId: o.orderId, quote: q, savedAt: Date.now() }))
 
-      if (IS_DEV) {
+      if (SIMULATE_FIAT) {
         await simulateFiatReceived(o.orderId)
         setStatus('processing')
       }
@@ -335,7 +337,7 @@ export function useRamp() {
         }
 
         // En dev: la quema quedó confirmada en Stellar → completar de inmediato
-        if (IS_DEV) {
+        if (SIMULATE_FIAT) {
           localStorage.removeItem(LS_KEY)
           setStatus('completed')
           return

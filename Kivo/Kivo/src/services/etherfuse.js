@@ -2,6 +2,8 @@
  * Cliente HTTP para la API de Etherfuse FX.
  * Authorization usa la API key directamente, sin prefijo "Bearer".
  *
+ * La simulación de pagos fiat (sandbox) requiere opt-in explícito.
+ *
  * Datos reales del sandbox (obtenidos via MCP):
  *  - customerId  : e6d34608-26b5-4246-89d4-658a227b16ae
  *  - walletId    : 5ca25f69-0fc3-4099-8d44-4575b27d15a9  (plataforma Kivo)
@@ -10,6 +12,23 @@
 
 const API_KEY  = import.meta.env.VITE_ETHERFUSE_API_KEY
 const BASE_URL = import.meta.env.VITE_ETHERFUSE_BASE_URL || 'https://api.sand.etherfuse.com'
+
+/**
+ * La simulación de fiat solo se permite cuando:
+ *  - el entorno es local explícito (Vite dev server), y
+ *  - el flag VITE_ETHERFUSE_SIMULATE_FIAT está activado, y
+ *  - la BASE_URL apunta al sandbox de Etherfuse.
+ *
+ * Nunca se habilita por el solo hecho de import.meta.env.DEV, para evitar
+ * que un preview mal configurado (p. ej. `vite` en vez de `vite build`)
+ * dispare fiat_received en un entorno compartido.
+ */
+export function isFiatSimulationEnabled() {
+  const flagEnabled = import.meta.env.VITE_ETHERFUSE_SIMULATE_FIAT === 'true'
+  const isLocalDev = import.meta.env.DEV === true
+  const isSandbox = /sand\.etherfuse\.com/.test(BASE_URL)
+  return flagEnabled && isLocalDev && isSandbox
+}
 
 export const USDC_STELLAR_ID =
   'USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'
@@ -154,8 +173,16 @@ export function getOrder(orderId) {
 /**
  * Simula la recepción del pago fiat (solo sandbox).
  * Debe llamarse después de crear una orden de onramp en estado 'created'.
+ *
+ * Solo se ejecuta si isFiatSimulationEnabled() es true. En caso contrario
+ * lanza un error para que el llamador no asuma que el pago fue simulado.
  */
 export function simulateFiatReceived(orderId) {
+  if (!isFiatSimulationEnabled()) {
+    throw new Error(
+      'simulateFiatReceived deshabilitado: requiere entorno local y VITE_ETHERFUSE_SIMULATE_FIAT=true contra sandbox'
+    )
+  }
   return request('/ramp/order/fiat_received', {
     method: 'POST',
     body: JSON.stringify({ orderId }),

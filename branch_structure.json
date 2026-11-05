@@ -1,0 +1,18 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "main",
+    "origin",
+    "security/issue-42-restringir-simulatefiatreceived-a-sandbox-local"
+  ],
+  "parent": {
+    "main": null,
+    "origin": "main",
+    "security/issue-42-restringir-simulatefiatreceived-a-sandbox-local": "main"
+  },
+  "order": [
+    "main",
+    "origin",
+    "security/issue-42-restringir-simulatefiatreceived-a-sandbox-local"
+  ]
+}
