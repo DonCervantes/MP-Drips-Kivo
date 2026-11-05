@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useMyEscrows } from '../hooks/useMyEscrows'
 import { EscrowDetailModal } from './EscrowDetailModal'
 import { useLanguage } from '../context/LanguageContext'
+import { computeReputation, reputationLabel } from '../lib/reputation'
 
 // Shortens Stellar public keys (G + 55 chars)
 const shorten = (address, start = 6, end = 4) => {
@@ -40,6 +41,19 @@ function getRoleKey(escrow, walletAddress) {
   return null
 }
 
+/** Devuelve la contraparte del usuario en el escrow (para reputación) */
+function getCounterparty(escrow, walletAddress) {
+  if (!escrow?.roles || !walletAddress) return null
+  const r = escrow.roles
+  const addr = walletAddress.toLowerCase()
+  const candidates = [
+    r.approver, r.serviceProvider, r.disputeResolver,
+    r.releaseSigner, r.receiver, r.platformAddress,
+  ]
+  const other = candidates.find(a => a && a.toLowerCase() !== addr)
+  return other ?? null
+}
+
 /**
  * Panel lateral que lista los escrows del usuario.
  *
@@ -52,6 +66,7 @@ export function EscrowDrawer({ walletAddress, onClose }) {
   const [selected, setSelected] = useState(null)
   const { t } = useLanguage()
   const d = t.drawer
+  const reputation = computeReputation(escrows, walletAddress)
 
   useEffect(() => {
     fetchEscrows(walletAddress)
@@ -90,6 +105,9 @@ export function EscrowDrawer({ walletAddress, onClose }) {
           <span className="drawer-wallet-addr">{shorten(walletAddress, 8, 6)}</span>
         </div>
 
+        {/* Reputación básica (métricas derivadas de escrows finalizados) */}
+        <ReputationSummary reputation={reputation} t={t} />
+
         {/* Contenido */}
         <div className="drawer-body">
           {loading && (
@@ -118,6 +136,7 @@ export function EscrowDrawer({ walletAddress, onClose }) {
               walletAddress={walletAddress}
               onClick={() => setSelected(escrow)}
               t={t}
+              reputation={reputation}
             />
           ))}
         </div>
@@ -140,6 +159,7 @@ export function EscrowDrawer({ walletAddress, onClose }) {
 function EscrowCard({ escrow, walletAddress, onClick, t }) {
   const d = t.drawer
   const dt = t.detail
+  const counterparty = getCounterparty(escrow, walletAddress)
 
   const statusKey = getStatusKey(escrow)
   const statusEntry = dt.statusLabels?.[statusKey] ?? { label: statusKey, color: 'status-active' }
@@ -193,6 +213,14 @@ function EscrowCard({ escrow, walletAddress, onClick, t }) {
       {escrow.description && (
         <p className="ec-desc">{escrow.description}</p>
       )}
+
+      {/* Reputación de la contraparte (solo si hay historial) */}
+      {counterparty && (
+        <div className="ec-counterparty">
+          <span className="ec-counterparty-label">{d.counterpartyLabel ?? 'Counterparty'}</span>
+          <code className="ec-counterparty-addr">{shorten(counterparty, 6, 4)}</code>
+        </div>
+      )}
     </div>
   )
 }
@@ -202,6 +230,50 @@ function MetaItem({ label, value, highlight }) {
     <div className="ec-meta-item">
       <span className="ec-meta-label">{label}</span>
       <span className={`ec-meta-value ${highlight ? 'ec-meta-highlight' : ''}`}>{value ?? '—'}</span>
+    </div>
+  )
+}
+
+/* ── Resumen de reputación ──────────────────────────────────────────── */
+function ReputationSummary({ reputation, t }) {
+  const d = t.drawer
+  if (!reputation || reputation.completed === 0) return null
+
+  const label = reputationLabel(reputation)
+
+  return (
+    <div className="drawer-reputation">
+      <div className="dr-header">
+        <span className="dr-title">{d.reputationTitle ?? 'Reputation'}</span>
+        <span className={`dr-badge dr-badge-${label.key}`}>{label.text}</span>
+      </div>
+      <div className="dr-metrics">
+        <ReputationMetric
+          label={d.repCompleted ?? 'Completed'}
+          value={reputation.completed}
+        />
+        <ReputationMetric
+          label={d.repVolume ?? 'Volume'}
+          value={reputation.volume}
+        />
+        <ReputationMetric
+          label={d.repDisputeRate ?? 'Dispute rate'}
+          value={`${reputation.disputeRate}%`}
+        />
+        <ReputationMetric
+          label={d.repAvgRelease ?? 'Avg release'}
+          value={reputation.avgReleaseLabel}
+        />
+      </div>
+    </div>
+  )
+}
+
+function ReputationMetric({ label, value }) {
+  return (
+    <div className="dr-metric">
+      <span className="dr-metric-label">{label}</span>
+      <span className="dr-metric-value">{value ?? '—'}</span>
     </div>
   )
 }

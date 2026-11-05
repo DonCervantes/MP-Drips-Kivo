@@ -67,6 +67,26 @@ export const translations = {
       costs: ['Auditoría de Smart Contracts e IA', 'Compliance regulatorio MX/EE.UU.', 'Infraestructura cloud', 'Adquisición de clientes'],
     },
 
+    // Reputation
+    reputation: {
+      tag: 'Reputación',
+      title: 'Reputación del Vendedor',
+      subtitle: 'Métricas derivadas de escrows finalizados',
+      completedOps: 'Operaciones completadas',
+      historicalVolume: 'Volumen histórico',
+      disputeRate: 'Tasa de disputas',
+      avgReleaseTime: 'Tiempo promedio de liberación',
+      verificationSignals: 'Señales de verificación',
+      verified: 'Verificado',
+      unverified: 'Sin verificar',
+      noData: 'Sin datos suficientes',
+      noDataSub: 'Completa operaciones para construir tu reputación.',
+      loading: 'Cargando reputación…',
+      days: 'días',
+      hours: 'horas',
+      ops: 'ops',
+    },
+
     // Goals
     goals: {
       tag: 'Hackathon 2026',
@@ -337,6 +357,26 @@ export const translations = {
       costs: ['Smart Contract & AI Audit', 'MX/U.S. Regulatory Compliance', 'Cloud Infrastructure', 'Customer Acquisition'],
     },
 
+    // Reputation
+    reputation: {
+      tag: 'Reputation',
+      title: 'Seller Reputation',
+      subtitle: 'Metrics derived from finalized escrows',
+      completedOps: 'Completed operations',
+      historicalVolume: 'Historical volume',
+      disputeRate: 'Dispute rate',
+      avgReleaseTime: 'Average release time',
+      verificationSignals: 'Verification signals',
+      verified: 'Verified',
+      unverified: 'Unverified',
+      noData: 'Not enough data',
+      noDataSub: 'Complete operations to build your reputation.',
+      loading: 'Loading reputation…',
+      days: 'days',
+      hours: 'hours',
+      ops: 'ops',
+    },
+
     goals: {
       tag: 'Hackathon 2026',
       title: 'Demo Objectives',
@@ -597,6 +637,26 @@ export const translations = {
       floatNote: '+ Float Yield em custódia · + Verificação veicular e legal',
       costStructure: 'Estrutura de Custos',
       costs: ['Auditoria de Smart Contracts e IA', 'Compliance regulatório MX/EUA', 'Infraestrutura cloud', 'Aquisição de clientes'],
+    },
+
+    // Reputation
+    reputation: {
+      tag: 'Reputação',
+      title: 'Reputação do Vendedor',
+      subtitle: 'Métricas derivadas de escrows finalizados',
+      completedOps: 'Operações concluídas',
+      historicalVolume: 'Volume histórico',
+      disputeRate: 'Taxa de disputas',
+      avgReleaseTime: 'Tempo médio de liberação',
+      verificationSignals: 'Sinais de verificação',
+      verified: 'Verificado',
+      unverified: 'Não verificado',
+      noData: 'Dados insuficientes',
+      noDataSub: 'Conclua operações para construir sua reputação.',
+      loading: 'Carregando reputação…',
+      days: 'dias',
+      hours: 'horas',
+      ops: 'ops',
     },
 
     goals: {
