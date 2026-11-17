@@ -40,6 +40,51 @@ function getRoleKey(escrow, walletAddress) {
   return null
 }
 
+/* ── Export CSV ─────────────────────────────────────────────────────── */
+
+function csvEscape(value) {
+  const s = value == null ? '' : String(value)
+  return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+}
+
+/** Contraparte: si el usuario es el vendedor, la otra parte es el comprador. */
+function getCounterpart(escrow, walletAddress) {
+  const r = escrow?.roles ?? {}
+  const addr = walletAddress?.toLowerCase()
+  if (addr && r.serviceProvider?.toLowerCase() === addr) return r.approver ?? ''
+  return r.serviceProvider ?? r.approver ?? ''
+}
+
+function escrowsToCsv(escrows, walletAddress, dt) {
+  const header = ['fecha', 'contractId', 'rol', 'monto', 'estado', 'contraparte']
+  const rows = escrows.map((escrow) => {
+    const statusKey = getStatusKey(escrow)
+    const estado = dt.statusLabels?.[statusKey]?.label ?? statusKey
+    const roleKey = getRoleKey(escrow, walletAddress)
+    const rol = roleKey ? (dt.roles?.[roleKey]?.label ?? roleKey) : ''
+    const monto = `${escrow.amount ?? ''} ${escrow.trustline?.symbol ?? ''}`.trim()
+    const fecha = escrow.createdAt?._seconds
+      ? new Date(escrow.createdAt._seconds * 1000).toISOString().slice(0, 10)
+      : ''
+    return [fecha, escrow.contractId ?? '', rol, monto, estado, getCounterpart(escrow, walletAddress)]
+      .map(csvEscape)
+      .join(',')
+  })
+  return [header.join(','), ...rows].join('\n')
+}
+
+function downloadEscrowsCsv(escrows, walletAddress, dt) {
+  // BOM para que Excel abra el UTF-8 con acentos correctos
+  const csv = '﻿' + escrowsToCsv(escrows, walletAddress, dt)
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `kivo-escrows-${new Date().toISOString().slice(0, 10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 /**
  * Panel lateral que lista los escrows del usuario.
  *
@@ -52,6 +97,7 @@ export function EscrowDrawer({ walletAddress, onClose }) {
   const [selected, setSelected] = useState(null)
   const { t } = useLanguage()
   const d = t.drawer
+  const dt = t.detail
 
   useEffect(() => {
     fetchEscrows(walletAddress)
@@ -72,6 +118,14 @@ export function EscrowDrawer({ walletAddress, onClose }) {
             <h2 className="drawer-title">{d.title}</h2>
           </div>
           <div className="drawer-header-right">
+            <button
+              className="drawer-refresh"
+              onClick={() => downloadEscrowsCsv(escrows, walletAddress, dt)}
+              disabled={loading || escrows.length === 0}
+              title={d.exportCsv}
+            >
+              <DownloadIcon />
+            </button>
             <button
               className="drawer-refresh"
               onClick={() => fetchEscrows(walletAddress)}
@@ -228,6 +282,17 @@ function CopyIcon() {
       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="9" y="9" width="13" height="13" rx="2" />
       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </svg>
+  )
+}
+
+function DownloadIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
     </svg>
   )
 }
