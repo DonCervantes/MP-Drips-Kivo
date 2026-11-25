@@ -4,6 +4,7 @@ import {
   isConnected as freighterIsConnected,
   getAddress as freighterGetAddress,
   requestAccess as freighterRequestAccess,
+  signMessage as freighterSignMessage,
   signTransaction as freighterSignTransaction,
 } from '@stellar/freighter-api'
 import { Networks } from '@stellar/stellar-sdk'
@@ -78,11 +79,26 @@ export function WalletProvider({ children }) {
     throw new Error('No hay wallet conectada')
   }, [walletType, acceslySign, freighterAddr, network])
 
+  const signOfferMessage = useCallback(async (message, address) => {
+    const result = await freighterSignMessage(message, { address })
+    if (result.error) {
+      throw new Error(typeof result.error === 'string' ? result.error : result.error.message)
+    }
+    if (!result.signedMessage || result.signerAddress !== address) {
+      throw new Error('La wallet no firmó la oferta con la dirección del vendedor.')
+    }
+
+    return typeof result.signedMessage === 'string'
+      ? result.signedMessage
+      : result.signedMessage.toString('base64')
+  }, [])
+
   return (
     <WalletContext.Provider value={{
       walletAddress,
       walletType,
       signTransaction,
+      signOfferMessage,
       // Freighter
       freighterAddr,
       freighterLoading,

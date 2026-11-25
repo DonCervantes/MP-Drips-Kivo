@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
+import { StrKey } from '@stellar/stellar-sdk'
 import { useWallet } from '../context/WalletContext'
 import { useLanguage } from '../context/LanguageContext'
+import { useNetwork } from '../context/NetworkContext'
+import { OFFER_TTL_SECONDS, serializeOffer, verifySignedOffer } from '../utils/signedOffer'
 
 function shortenAddress(addr) {
   if (!addr) return ''
@@ -9,8 +12,9 @@ function shortenAddress(addr) {
 }
 
 export function CreateOfferModal({ onClose }) {
-  const { walletAddress } = useWallet()
+  const { walletAddress, signOfferMessage } = useWallet()
   const { t, lang } = useLanguage()
+  const { network } = useNetwork()
   const o = t.offer
 
   const [form, setForm] = useState({
@@ -22,23 +26,65 @@ export function CreateOfferModal({ onClose }) {
 
   const [offerUrl, setOfferUrl] = useState(null)
   const [copied,   setCopied]   = useState(false)
+  const [signing, setSigning] = useState(false)
+  const [error, setError] = useState('')
 
   function handleChange(ev) {
     setForm(prev => ({ ...prev, [ev.target.name]: ev.target.value }))
   }
 
-  function handleGenerate(ev) {
+  async function handleGenerate(ev) {
     ev.preventDefault()
-    const base = import.meta.env.VITE_APP_URL || window.location.origin
-    const url = new URL('/buy', base)
-    url.searchParams.set('seller', walletAddress)
-    url.searchParams.set('amount', form.amount)
-    url.searchParams.set('title',  form.title)
-    url.searchParams.set('lang',   lang)
-    if (form.desc)     url.searchParams.set('desc',     form.desc)
-    if (form.resolver) url.searchParams.set('resolver', form.resolver)
-    setOfferUrl(url.toString())
-    setCopied(false)
+    setSigning(true)
+    setError('')
+    try {
+      const amount = Number(form.amount)
+      const disputeResolver = form.resolver.trim() || walletAddress
+      if (
+        !/^\d+(?:\.\d{1,2})?$/.test(form.amount.trim()) ||
+        !Number.isFinite(amount) ||
+        amount <= 0 ||
+        !Number.isSafeInteger(Number(form.amount.replace('.', ''))) ||
+        !StrKey.isValidEd25519PublicKey(walletAddress) ||
+        !StrKey.isValidEd25519PublicKey(disputeResolver) ||
+        !form.title.trim() ||
+        form.title.trim().length > 120 ||
+        form.desc.trim().length > 1000
+      ) {
+        throw new Error(o.invalidAmount)
+      }
+
+      const issuedAt = Math.floor(Date.now() / 1000)
+      const offer = {
+        version: 1,
+        network,
+        asset: 'USDC',
+        seller: walletAddress,
+        receiver: walletAddress,
+        amount: amount.toFixed(2),
+        platformFee: '1',
+        title: form.title.trim(),
+        description: form.desc.trim() || form.title.trim(),
+        disputeResolver,
+        issuedAt,
+        expiresAt: issuedAt + OFFER_TTL_SECONDS,
+      }
+      const payload = serializeOffer(offer)
+      const signature = await signOfferMessage(payload, walletAddress)
+      await verifySignedOffer(payload, signature)
+
+      const base = import.meta.env.VITE_APP_URL || window.location.origin
+      const url = new URL('/buy', base)
+      url.searchParams.set('offer', payload)
+      url.searchParams.set('signature', signature)
+      url.searchParams.set('lang', lang)
+      setOfferUrl(url.toString())
+      setCopied(false)
+    } catch (err) {
+      setError(err?.message || o.signError)
+    } finally {
+      setSigning(false)
+    }
   }
 
   async function handleCopy() {
@@ -78,6 +124,10 @@ export function CreateOfferModal({ onClose }) {
                 <span className="buy-detail-label">{o.qrSeller}</span>
                 <code className="modal-wallet-addr">{shortenAddress(walletAddress)}</code>
               </div>
+              <div className="buy-detail-row">
+                <span className="buy-detail-label">{o.expirationLabel}</span>
+                <span style={{ color: 'var(--text)' }}>{o.expirationValue}</span>
+              </div>
             </div>
 
             <div className="contract-id-box" style={{ width: '100%' }}>
@@ -91,7 +141,7 @@ export function CreateOfferModal({ onClose }) {
               <button className="btn-modal-ghost" onClick={() => setOfferUrl(null)} style={{ flex: 1 }}>
                 {o.newOffer}
               </button>
-              <button className="btn-modal-primary" onClick={handleCopy} style={{ flex: 1 }}>
+              <button type="button" className="btn-modal-primary" onClick={handleCopy} style={{ flex: 1 }}>
                 {copied ? o.copied : o.copyLink}
               </button>
             </div>
@@ -193,6 +243,8 @@ export function CreateOfferModal({ onClose }) {
           </div>
         </div>
 
+        {error && <div className="modal-error">{error}</div>}
+
         <div className="modal-flow-info">
           <div className="flow-step"><span className="flow-n">1</span> {o.step1}</div>
           <div className="flow-step"><span className="flow-n">2</span> {o.step2}</div>
@@ -203,8 +255,8 @@ export function CreateOfferModal({ onClose }) {
           <button type="button" className="btn-modal-ghost" onClick={onClose}>
             {o.cancel}
           </button>
-          <button type="submit" className="btn-modal-primary">
-            {o.generate}
+          <button type="submit" className="btn-modal-primary" disabled={signing}>
+            {signing ? o.signing : o.generate}
           </button>
         </div>
       </form>
