@@ -52,7 +52,6 @@ Kivo es una dApp que permite a usuarios de Latinoamérica crear y gestionar **es
 | Ramp | Etherfuse FX API (sandbox) |
 | Wallet social | Accesly |
 | Wallet browser | Freighter (`@stellar/freighter-api`) |
-| Estado / DB | Supabase |
 | QR | `qrcode.react` |
 
 ---
@@ -74,8 +73,6 @@ VITE_ETHERFUSE_API_KEY=          # API Key de Etherfuse
 VITE_ETHERFUSE_BASE_URL=         # URL base (default: https://api.sand.etherfuse.com)
 VITE_TRUSTLESS_API_KEY=          # API Key Trustless Work (testnet)
 VITE_TRUSTLESS_API_KEY_MAINNET=  # API Key Trustless Work (mainnet)
-VITE_SUPABASE_URL=               # URL de tu proyecto Supabase
-VITE_SUPABASE_ANON_KEY=          # Anon key de Supabase
 ```
 
 ---
