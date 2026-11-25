@@ -32,6 +32,11 @@ Kivo es una dApp que permite a usuarios de Latinoamérica crear y gestionar **es
 - **Accesly** — wallet social, integración con `<ConnectButton />`
 - **Freighter** — extensión de browser para Stellar
 
+### Ofertas QR firmadas
+- Freighter firma el payload de la oferta usando SEP-53 antes de generar el QR.
+- La firma vincula vendedor/receptor, monto, USDC, comisión, árbitro, red y detalles del producto.
+- Las ofertas vencen en 24 horas; la página de compra verifica firma y vencimiento antes de permitir crear el escrow.
+
 ### Internacionalización
 - Soporte completo para Español (MX), English (US) y Português (BR)
 - Selector de idioma en la barra de navegación

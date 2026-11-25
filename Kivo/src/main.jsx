@@ -10,7 +10,8 @@ import App from './App.jsx'
 import { BuyPage } from './pages/BuyPage.jsx'
 
 // Si la URL contiene el parámetro "seller", renderizamos la página de compra
-const isBuyPage = new URLSearchParams(window.location.search).has('seller')
+const queryParams = new URLSearchParams(window.location.search)
+const isBuyPage = queryParams.has('seller') || queryParams.has('offer')
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

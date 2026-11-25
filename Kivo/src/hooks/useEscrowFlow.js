@@ -48,7 +48,7 @@ export function useEscrowFlow() {
   const { approveMilestone: approv }= useApproveMilestone()
   const { sendTransaction }         = useSendTransaction()
 
-  async function createEscrow(formData, walletAddress) {
+  async function createEscrow(formData, walletAddress, validateBeforeSign) {
     setLoading(true)
     setError(null)
     setResult(null)
@@ -82,6 +82,7 @@ export function useEscrowFlow() {
       if (status === 'FAILED' || !unsignedTransaction)
         throw new Error('El despliegue del escrow falló. Revisa tu API Key y conexión.')
 
+      if (validateBeforeSign) await validateBeforeSign()
       const { signedXdr } = await signTransaction(unsignedTransaction)
       const txResult      = await sendTransaction(signedXdr)
 

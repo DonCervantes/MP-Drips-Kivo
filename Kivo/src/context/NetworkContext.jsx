@@ -7,7 +7,7 @@ export function NetworkProvider({ children }) {
   const toggleNetwork = () => setNetwork(n => n === 'testnet' ? 'mainnet' : 'testnet')
 
   return (
-    <NetworkContext.Provider value={{ network, toggleNetwork }}>
+    <NetworkContext.Provider value={{ network, setNetwork, toggleNetwork }}>
       {children}
     </NetworkContext.Provider>
   )
