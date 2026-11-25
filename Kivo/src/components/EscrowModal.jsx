@@ -149,7 +149,7 @@ export function EscrowModal({ walletAddress, onClose }) {
             />
           </Field>
 
-          <Field label={e.fieldDispute} hint={e.fieldDisputeHint} required>
+          <Field label={e.fieldDispute} hint={e.fieldDisputeHint}>
             <input
               name="disputeResolver"
               placeholder="G..."
