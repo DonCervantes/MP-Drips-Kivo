@@ -273,6 +273,21 @@ export const translations = {
       successStep2: 'Financia el escrow con',
       successStep3: 'Aprueba cuando el vendedor entregue',
     },
+
+    notifications: {
+      title: 'Notificaciones',
+      empty: 'No tienes notificaciones aún.',
+      markAllRead: 'Marcar leídas',
+      clear: 'Limpiar',
+      justNow: 'ahora',
+      escrowCreatedTitle: 'Escrow creado',
+      escrowFundedTitle: 'Escrow fondeado',
+      escrowApprovedTitle: 'Hito aprobado',
+      escrowReleasedTitle: 'Fondos liberados',
+      escrowDisputedTitle: 'Escrow en disputa',
+      rampCompletedTitle: 'Orden Ramp completada',
+      rampFailedTitle: 'Orden Ramp fallida',
+    },
   },
 
   en: {
@@ -535,6 +550,21 @@ export const translations = {
       successStep2: 'Fund the escrow with',
       successStep3: 'Approve when the seller delivers',
     },
+
+    notifications: {
+      title: 'Notifications',
+      empty: 'No notifications yet.',
+      markAllRead: 'Mark all read',
+      clear: 'Clear',
+      justNow: 'now',
+      escrowCreatedTitle: 'Escrow created',
+      escrowFundedTitle: 'Escrow funded',
+      escrowApprovedTitle: 'Milestone approved',
+      escrowReleasedTitle: 'Funds released',
+      escrowDisputedTitle: 'Escrow disputed',
+      rampCompletedTitle: 'Ramp order completed',
+      rampFailedTitle: 'Ramp order failed',
+    },
   },
 
   pt: {
@@ -796,6 +826,21 @@ export const translations = {
       successStep1: 'Escrow implantado na Stellar',
       successStep2: 'Financie o escrow com',
       successStep3: 'Aprove quando o vendedor entregar',
+    },
+
+    notifications: {
+      title: 'Notificações',
+      empty: 'Você ainda não tem notificações.',
+      markAllRead: 'Marcar lidas',
+      clear: 'Limpar',
+      justNow: 'agora',
+      escrowCreatedTitle: 'Escrow criado',
+      escrowFundedTitle: 'Escrow financiado',
+      escrowApprovedTitle: 'Marco aprovado',
+      escrowReleasedTitle: 'Fundos liberados',
+      escrowDisputedTitle: 'Escrow em disputa',
+      rampCompletedTitle: 'Ordem Ramp concluída',
+      rampFailedTitle: 'Ordem Ramp falhou',
     },
   },
 }
