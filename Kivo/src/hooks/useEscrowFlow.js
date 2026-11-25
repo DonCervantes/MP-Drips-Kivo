@@ -53,6 +53,13 @@ export function useEscrowFlow() {
     setError(null)
     setResult(null)
     try {
+      if (!KIVO_PLATFORM_ADDRESS) {
+        throw new Error(
+          'VITE_KIVO_PLATFORM_ADDRESS is not configured. ' +
+          'A valid Stellar platform public key is required to create an escrow.'
+        )
+      }
+
       const engagementId = typeof crypto !== 'undefined' && crypto.randomUUID
         ? crypto.randomUUID()
         : `kivo-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
@@ -67,7 +74,7 @@ export function useEscrowFlow() {
         roles: {
           approver:        walletAddress,
           serviceProvider: formData.serviceProvider,
-          platformAddress: KIVO_PLATFORM_ADDRESS || walletAddress,
+          platformAddress: KIVO_PLATFORM_ADDRESS,
           releaseSigner:   walletAddress,
           disputeResolver: formData.disputeResolver,
           receiver:        formData.receiver || formData.serviceProvider,
