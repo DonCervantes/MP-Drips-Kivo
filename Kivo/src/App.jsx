@@ -7,6 +7,7 @@ import { EscrowModal }       from './components/EscrowModal'
 import { EscrowDrawer }      from './components/EscrowDrawer'
 import { RampPage }          from './components/Ramp/RampPage'
 import { CreateOfferModal }  from './components/CreateOfferModal'
+import { SellerDashboard }   from './components/SellerDashboard'
 import './App.css'
 
 function shortenAddress(addr) {
@@ -39,6 +40,7 @@ export default function App() {
   const [showDrawer, setShowDrawer] = useState(false)
   const [showRamp,   setShowRamp]   = useState(false)
   const [showOffer,  setShowOffer]  = useState(false)
+  const [showSeller, setShowSeller] = useState(false)
 
   const anyError = acceslyError || freighterError
 
@@ -87,6 +89,9 @@ export default function App() {
               )}
               <button className="btn-my-escrows" onClick={() => setShowOffer(true)}>
                 {t.offer?.navBtn || 'Vender'}
+              </button>
+              <button className="btn-my-escrows" onClick={() => setShowSeller(true)}>
+                {t.nav.sellerDashboard}
               </button>
               <button className="btn-my-escrows" onClick={() => setShowDrawer(true)}>
                 {t.nav.myEscrows}
@@ -291,6 +296,14 @@ export default function App() {
         <EscrowModal
           walletAddress={walletAddress}
           onClose={() => setShowEscrow(false)}
+        />
+      )}
+
+      {/* ── SELLER DASHBOARD ── */}
+      {showSeller && (
+        <SellerDashboard
+          walletAddress={walletAddress}
+          onClose={() => setShowSeller(false)}
         />
       )}
 

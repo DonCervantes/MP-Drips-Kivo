@@ -2,13 +2,14 @@ import { useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { useWallet } from '../context/WalletContext'
 import { useLanguage } from '../context/LanguageContext'
+import { saveSellerOffer } from '../hooks/useSellerOffers'
 
 function shortenAddress(addr) {
   if (!addr) return ''
   return `${addr.slice(0, 8)}...${addr.slice(-6)}`
 }
 
-export function CreateOfferModal({ onClose }) {
+export function CreateOfferModal({ onClose, onOfferCreated }) {
   const { walletAddress } = useWallet()
   const { t, lang } = useLanguage()
   const o = t.offer
@@ -37,7 +38,17 @@ export function CreateOfferModal({ onClose }) {
     url.searchParams.set('lang',   lang)
     if (form.desc)     url.searchParams.set('desc',     form.desc)
     if (form.resolver) url.searchParams.set('resolver', form.resolver)
-    setOfferUrl(url.toString())
+    const generatedUrl = url.toString()
+    const saved = saveSellerOffer(walletAddress, {
+      title: form.title,
+      desc: form.desc,
+      amount: form.amount,
+      resolver: form.resolver,
+      lang,
+      url: generatedUrl,
+    })
+    if (saved) onOfferCreated?.(saved)
+    setOfferUrl(generatedUrl)
     setCopied(false)
   }
 
