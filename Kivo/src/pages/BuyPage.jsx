@@ -1,12 +1,17 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { ConnectButton } from 'accesly'
 import { useWallet } from '../context/WalletContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useEscrowFlow } from '../hooks/useEscrowFlow'
+import { parseExp, secondsRemaining, formatRemaining } from '../lib/offerExpiry'
 
 function shortenAddress(addr) {
   if (!addr) return ''
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`
+}
+
+function isExpiredNow(exp) {
+  return exp !== null && secondsRemaining(exp, Date.now()) === 0
 }
 
 export function BuyPage() {
@@ -17,6 +22,8 @@ export function BuyPage() {
   const desc     = params.get('desc')     || title
   const resolver = params.get('resolver') || seller
   const langParam = params.get('lang')
+  // Legacy offers (no or invalid `exp`) stay purchasable without a countdown.
+  const exp       = parseExp(params.get('exp'))
 
   const { t, setLang } = useLanguage()
   const b = t.buy
@@ -38,8 +45,24 @@ export function BuyPage() {
 
   const { createEscrow, loading, error, result } = useEscrowFlow()
 
+  const [now, setNow] = useState(() => Date.now())
+  const remaining = exp === null ? null : secondsRemaining(exp, now)
+  const expired   = remaining === 0
+
+  // Ticks once per second only while an offer with `exp` is still open.
+  useEffect(() => {
+    if (exp === null || expired) return
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [exp, expired])
+
   async function handleBuy() {
     if (!walletAddress) return
+    // Re-check at click time so a tab open right at the boundary cannot buy.
+    if (isExpiredNow(exp)) {
+      setNow(exp * 1000)
+      return
+    }
     await createEscrow(
       {
         title,
@@ -107,6 +130,12 @@ export function BuyPage() {
               <span className="buy-detail-label">{t.offer?.qrSeller || 'Vendedor'}</span>
               <code className="modal-wallet-addr">{shortenAddress(seller)}</code>
             </div>
+            {remaining !== null && !expired && (
+              <div className="buy-detail-row">
+                <span className="buy-detail-label">{b.expiresIn}</span>
+                <code className="modal-wallet-addr">{formatRemaining(remaining)}</code>
+              </div>
+            )}
           </div>
 
           <div className="buy-flow-info">
@@ -117,7 +146,11 @@ export function BuyPage() {
 
           {error && <div className="modal-error">{error}</div>}
 
-          {walletAddress ? (
+          {expired ? (
+            <div className="modal-error" role="alert">
+              <strong>{b.expiredTitle}</strong> {b.expiredHint}
+            </div>
+          ) : walletAddress ? (
             <>
               <div className="modal-wallet-row" style={{ marginBottom: '1rem' }}>
                 <span className="status-dot" />
