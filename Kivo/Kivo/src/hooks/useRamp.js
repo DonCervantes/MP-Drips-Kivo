@@ -12,6 +12,7 @@ import {
   createQuote,
   createOrder,
   getOrder,
+  isEtherfuseSandbox,
   simulateFiatReceived,
   USDC_STELLAR_ID,
   KIVO_CUSTOMER_ID,
@@ -256,7 +257,7 @@ export function useRamp() {
       // Persistir para sobrevivir cierres de modal
       localStorage.setItem(LS_KEY, JSON.stringify({ orderId: o.orderId, quote: q, savedAt: Date.now() }))
 
-      if (IS_DEV) {
+      if (isEtherfuseSandbox()) {
         await simulateFiatReceived(o.orderId)
         setStatus('processing')
       }

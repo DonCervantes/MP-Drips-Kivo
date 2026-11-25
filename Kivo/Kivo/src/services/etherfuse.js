@@ -151,11 +151,29 @@ export function getOrder(orderId) {
 
 // ── Sandbox only ──────────────────────────────────────────────────────────────
 
+const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '[::1]'])
+
+/**
+ * Determina si la simulación de fiat en sandbox está habilitada.
+ * Exige build de desarrollo, flag explícito VITE_ETHERFUSE_SANDBOX=1 y hostname local.
+ */
+export function isEtherfuseSandbox() {
+  return (
+    Boolean(import.meta.env.DEV) &&
+    import.meta.env.VITE_ETHERFUSE_SANDBOX === '1' &&
+    typeof window !== 'undefined' &&
+    LOCAL_HOSTNAMES.has(window.location.hostname)
+  )
+}
+
 /**
  * Simula la recepción del pago fiat (solo sandbox).
  * Debe llamarse después de crear una orden de onramp en estado 'created'.
  */
 export function simulateFiatReceived(orderId) {
+  if (!isEtherfuseSandbox()) {
+    throw new Error('La simulación de pago fiat solo está permitida en entorno local con VITE_ETHERFUSE_SANDBOX=1.')
+  }
   return request('/ramp/order/fiat_received', {
     method: 'POST',
     body: JSON.stringify({ orderId }),
