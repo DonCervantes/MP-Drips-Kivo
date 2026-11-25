@@ -1933,3 +1933,249 @@ h2 {
   font-weight: 600;
   font-size: 0.95rem;
 }
+
+/* ─────────────────────────────────────────
+   REPUTATION PROFILE & INLINE BADGE
+───────────────────────────────────────── */
+.reputation-modal {
+  max-width: 540px;
+}
+
+.reputation-wallet-row {
+  justify-content: space-between;
+}
+
+.reputation-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.25rem 0 1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.75rem;
+}
+
+.reputation-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.reputation-tab:hover {
+  color: var(--white);
+  border-color: rgba(255,255,255,0.18);
+}
+
+.reputation-tab--active {
+  background: var(--gold-dim);
+  border-color: rgba(212,166,71,0.45);
+  color: var(--gold-light);
+}
+
+.reputation-tab-count {
+  font-size: 0.75rem;
+  background: rgba(255,255,255,0.06);
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+}
+
+.reputation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.reputation-stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.reputation-stat-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.reputation-stat-val {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1.2;
+}
+
+.reputation-unit {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.reputation-stat-gold {
+  color: var(--gold-light);
+}
+
+.reputation-stat-teal {
+  color: var(--teal);
+}
+
+.reputation-stat-warn {
+  color: #f87171;
+}
+
+.reputation-note {
+  margin-top: 0.85rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.reputation-empty {
+  margin-top: 1rem;
+  padding: 1.25rem;
+  text-align: center;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.reputation-history {
+  margin-top: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.reputation-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.reputation-history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+}
+
+.reputation-history-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.reputation-history-title {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reputation-history-role {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.reputation-history-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.reputation-history-amt {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.reputation-inline {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.reputation-inline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.reputation-inline-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.reputation-inline-link,
+.role-rep-link {
+  background: none;
+  border: none;
+  color: var(--gold-light);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+}
+
+.reputation-inline-link:hover,
+.role-rep-link:hover {
+  text-decoration: underline;
+}
+
+.role-rep-link {
+  margin-top: 0.35rem;
+  align-self: flex-start;
+}
+
+.reputation-inline-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.reputation-inline-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem 0.75rem;
+}
+
+.reputation-inline-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.reputation-inline-label {
+  font-size: 0.73rem;
+  color: var(--muted);
+}
+
+.reputation-inline-val {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--white);
+}

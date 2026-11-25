@@ -7,6 +7,7 @@ import { EscrowModal }       from './components/EscrowModal'
 import { EscrowDrawer }      from './components/EscrowDrawer'
 import { RampPage }          from './components/Ramp/RampPage'
 import { CreateOfferModal }  from './components/CreateOfferModal'
+import { ReputationModal }   from './components/ReputationModal'
 import './App.css'
 
 function shortenAddress(addr) {
@@ -39,6 +40,7 @@ export default function App() {
   const [showDrawer, setShowDrawer] = useState(false)
   const [showRamp,   setShowRamp]   = useState(false)
   const [showOffer,  setShowOffer]  = useState(false)
+  const [showProfile, setShowProfile] = useState(false)
 
   const anyError = acceslyError || freighterError
 
@@ -90,6 +92,9 @@ export default function App() {
               </button>
               <button className="btn-my-escrows" onClick={() => setShowDrawer(true)}>
                 {t.nav.myEscrows}
+              </button>
+              <button className="btn-my-escrows" onClick={() => setShowProfile(true)}>
+                {t.nav.profile}
               </button>
             </>
           )}
@@ -299,6 +304,14 @@ export default function App() {
         <EscrowDrawer
           walletAddress={walletAddress}
           onClose={() => setShowDrawer(false)}
+        />
+      )}
+
+      {/* ── REPUTATION MODAL ── */}
+      {showProfile && (
+        <ReputationModal
+          walletAddress={walletAddress}
+          onClose={() => setShowProfile(false)}
         />
       )}
 

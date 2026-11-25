@@ -1,8 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { ConnectButton } from 'accesly'
 import { useWallet } from '../context/WalletContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useEscrowFlow } from '../hooks/useEscrowFlow'
+import { ReputationBadge } from '../components/ReputationBadge'
+import { ReputationModal } from '../components/ReputationModal'
 
 function shortenAddress(addr) {
   if (!addr) return ''
@@ -37,6 +39,7 @@ export function BuyPage() {
   } = useWallet()
 
   const { createEscrow, loading, error, result } = useEscrowFlow()
+  const [showSellerProfile, setShowSellerProfile] = useState(false)
 
   async function handleBuy() {
     if (!walletAddress) return
@@ -109,6 +112,14 @@ export function BuyPage() {
             </div>
           </div>
 
+          {seller && (
+            <ReputationBadge
+              walletAddress={seller}
+              role="seller"
+              onOpenProfile={() => setShowSellerProfile(true)}
+            />
+          )}
+
           <div className="buy-flow-info">
             <div className="flow-step"><span className="flow-n">1</span> {b.step1}</div>
             <div className="flow-step"><span className="flow-n">2</span> {b.step2}</div>
@@ -148,6 +159,14 @@ export function BuyPage() {
           )}
         </div>
       </div>
+
+      {showSellerProfile && seller && (
+        <ReputationModal
+          walletAddress={seller}
+          initialRole="seller"
+          onClose={() => setShowSellerProfile(false)}
+        />
+      )}
     </div>
   )
 }
