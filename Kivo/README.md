@@ -52,7 +52,7 @@ Kivo es una dApp que permite a usuarios de Latinoamérica crear y gestionar **es
 | Ramp | Etherfuse FX API (sandbox) |
 | Wallet social | Accesly |
 | Wallet browser | Freighter (`@stellar/freighter-api`) |
-| Estado / DB | Supabase |
+
 | QR | `qrcode.react` |
 
 ---
