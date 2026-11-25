@@ -10,13 +10,19 @@ function shortenAddress(addr) {
 }
 
 export function BuyPage() {
-  const params   = new URLSearchParams(window.location.search)
-  const seller   = params.get('seller')   || ''
-  const amount   = params.get('amount')   || '0'
-  const title    = params.get('title')    || 'Oferta'
-  const desc     = params.get('desc')     || title
-  const resolver = params.get('resolver') || seller
+  const params    = new URLSearchParams(window.location.search)
+  const seller    = params.get('seller')    || ''
+  const amount    = params.get('amount')    || '0'
+  const title     = params.get('title')     || 'Oferta'
+  const desc      = params.get('desc')      || title
+  const milestone = params.get('milestone') || desc
+  const receiver  = params.get('receiver')  || seller
+  const resolver  = params.get('resolver')  || seller
+  const expParam  = params.get('exp')
   const langParam = params.get('lang')
+
+  const expiresAt = expParam ? Number(expParam) : null
+  const isExpired = Boolean(expiresAt && Number.isFinite(expiresAt) && Date.now() > expiresAt)
 
   const { t, setLang } = useLanguage()
   const b = t.buy
@@ -39,14 +45,14 @@ export function BuyPage() {
   const { createEscrow, loading, error, result } = useEscrowFlow()
 
   async function handleBuy() {
-    if (!walletAddress) return
+    if (!walletAddress || isExpired) return
     await createEscrow(
       {
         title,
         description:     desc,
-        milestoneDesc:   desc,
+        milestoneDesc:   milestone,
         serviceProvider: seller,
-        receiver:        seller,
+        receiver,
         disputeResolver: resolver,
         amount,
         platformFee:     '1',
@@ -107,44 +113,67 @@ export function BuyPage() {
               <span className="buy-detail-label">{t.offer?.qrSeller || 'Vendedor'}</span>
               <code className="modal-wallet-addr">{shortenAddress(seller)}</code>
             </div>
+            {milestone && milestone !== desc && (
+              <div className="buy-detail-row">
+                <span className="buy-detail-label">{t.offer?.qrMilestone || 'Hito'}</span>
+                <span style={{ color: 'var(--text)', textAlign: 'right' }}>{milestone}</span>
+              </div>
+            )}
+            {expiresAt && Number.isFinite(expiresAt) && (
+              <div className="buy-detail-row">
+                <span className="buy-detail-label">{t.offer?.qrExpires || 'Expira'}</span>
+                <span style={{ color: isExpired ? '#f87171' : 'var(--gold-light)', fontSize: '0.85rem' }}>
+                  {new Date(expiresAt).toLocaleString()}
+                </span>
+              </div>
+            )}
           </div>
 
-          <div className="buy-flow-info">
-            <div className="flow-step"><span className="flow-n">1</span> {b.step1}</div>
-            <div className="flow-step"><span className="flow-n">2</span> {b.step2}</div>
-            <div className="flow-step"><span className="flow-n">3</span> {b.step3}</div>
-          </div>
-
-          {error && <div className="modal-error">{error}</div>}
-
-          {walletAddress ? (
-            <>
-              <div className="modal-wallet-row" style={{ marginBottom: '1rem' }}>
-                <span className="status-dot" />
-                <span className="modal-wallet-label">{b.yourWallet}</span>
-                <code className="modal-wallet-addr">{shortenAddress(walletAddress)}</code>
-              </div>
-              <button
-                className="btn-primary buy-btn"
-                onClick={handleBuy}
-                disabled={loading}
-              >
-                {loading
-                  ? <><span className="spinner" /> {b.buying}</>
-                  : `${b.buyBtn} ${amount} USDC`
-                }
-              </button>
-            </>
-          ) : (
-            <div className="buy-connect-section">
-              <p style={{ color: 'var(--muted)', marginBottom: '1rem' }}>{b.connectHint}</p>
-              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                <button className="btn-connect-freighter" onClick={connectFreighter} disabled={freighterLoading}>
-                  {freighterLoading ? <span className="spinner" /> : 'Freighter'}
-                </button>
-                <ConnectButton />
-              </div>
+          {isExpired ? (
+            <div className="modal-error">
+              <strong>{b.expiredTitle}</strong>
+              <div style={{ marginTop: '0.25rem' }}>{b.expiredSub}</div>
             </div>
+          ) : (
+            <>
+              <div className="buy-flow-info">
+                <div className="flow-step"><span className="flow-n">1</span> {b.step1}</div>
+                <div className="flow-step"><span className="flow-n">2</span> {b.step2}</div>
+                <div className="flow-step"><span className="flow-n">3</span> {b.step3}</div>
+              </div>
+
+              {error && <div className="modal-error">{error}</div>}
+
+              {walletAddress ? (
+                <>
+                  <div className="modal-wallet-row" style={{ marginBottom: '1rem' }}>
+                    <span className="status-dot" />
+                    <span className="modal-wallet-label">{b.yourWallet}</span>
+                    <code className="modal-wallet-addr">{shortenAddress(walletAddress)}</code>
+                  </div>
+                  <button
+                    className="btn-primary buy-btn"
+                    onClick={handleBuy}
+                    disabled={loading}
+                  >
+                    {loading
+                      ? <><span className="spinner" /> {b.buying}</>
+                      : `${b.buyBtn} ${amount} USDC`
+                    }
+                  </button>
+                </>
+              ) : (
+                <div className="buy-connect-section">
+                  <p style={{ color: 'var(--muted)', marginBottom: '1rem' }}>{b.connectHint}</p>
+                  <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <button className="btn-connect-freighter" onClick={connectFreighter} disabled={freighterLoading}>
+                      {freighterLoading ? <span className="spinner" /> : 'Freighter'}
+                    </button>
+                    <ConnectButton />
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
