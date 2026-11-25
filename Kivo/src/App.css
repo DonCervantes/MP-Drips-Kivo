@@ -1933,3 +1933,190 @@ h2 {
   font-weight: 600;
   font-size: 0.95rem;
 }
+
+/* ─────────────────────────────────────────
+   FREIGHTER MOBILE / NO-EXTENSION FALLBACK
+───────────────────────────────────────── */
+.freighter-fallback-banner {
+  margin: 0 40px;
+  padding: 14px 18px;
+  background: var(--card);
+  border: 1px solid rgba(212,166,71,0.28);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.freighter-fallback-banner--inline {
+  margin: 1rem 0 0;
+  border-top: 1px solid rgba(212,166,71,0.28);
+  border-radius: 12px;
+  text-align: left;
+  background: var(--surface);
+}
+
+.freighter-fallback-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.freighter-fallback-title {
+  font-size: 13.5px;
+  color: var(--gold-light);
+}
+
+.freighter-fallback-close {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 2px 6px;
+  line-height: 1;
+}
+
+.freighter-fallback-close:hover {
+  color: var(--white);
+}
+
+.freighter-fallback-body {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.freighter-fallback-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn-freighter-mobile,
+.btn-accesly-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.btn-freighter-mobile {
+  background: var(--gold-dim);
+  color: var(--gold-light);
+  border: 1px solid rgba(212,166,71,0.35);
+}
+
+.btn-freighter-mobile:hover {
+  background: rgba(212,166,71,0.24);
+}
+
+.btn-accesly-fallback {
+  background: var(--teal-dim);
+  color: var(--teal);
+  border: 1px solid rgba(45,212,191,0.3);
+}
+
+.btn-accesly-fallback:hover:not(:disabled) {
+  background: rgba(45,212,191,0.2);
+}
+
+.btn-accesly-fallback:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─────────────────────────────────────────
+   BUY PAGE RESPONSIVE & CONNECT ACTIONS
+───────────────────────────────────────── */
+.buy-connect-hint {
+  color: var(--muted);
+  margin-bottom: 1rem;
+  font-size: 0.92rem;
+}
+
+.buy-connect-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.buy-card .contract-value,
+.buy-card .modal-wallet-addr {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 8px 12px;
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .nav-wallet {
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .freighter-fallback-banner {
+    margin: 0 12px;
+    padding: 12px 14px;
+  }
+
+  .freighter-fallback-banner--inline {
+    margin: 1rem 0 0;
+  }
+
+  .freighter-fallback-actions {
+    flex-direction: column;
+  }
+
+  .btn-freighter-mobile,
+  .btn-accesly-fallback {
+    width: 100%;
+  }
+
+  .buy-container {
+    padding: 1.25rem 0.75rem 3rem;
+  }
+
+  .buy-card {
+    padding: 1.25rem 1rem;
+    gap: 1rem;
+    border-radius: 14px;
+  }
+
+  .buy-title {
+    font-size: 1.25rem;
+  }
+
+  .buy-detail-row {
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+  }
+
+  .buy-connect-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .buy-connect-actions .btn-connect-freighter {
+    width: 100%;
+    justify-content: center;
+    min-height: 42px;
+  }
+}

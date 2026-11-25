@@ -7,6 +7,7 @@ import { EscrowModal }       from './components/EscrowModal'
 import { EscrowDrawer }      from './components/EscrowDrawer'
 import { RampPage }          from './components/Ramp/RampPage'
 import { CreateOfferModal }  from './components/CreateOfferModal'
+import { FreighterFallbackBanner } from './components/FreighterFallbackBanner'
 import './App.css'
 
 function shortenAddress(addr) {
@@ -124,6 +125,8 @@ export default function App() {
       {anyError && (
         <div className="error-banner">{anyError}</div>
       )}
+
+      <FreighterFallbackBanner />
 
       {/* ── HERO ── */}
       <header className="hero">

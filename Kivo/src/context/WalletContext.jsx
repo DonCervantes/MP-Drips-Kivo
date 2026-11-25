@@ -29,6 +29,7 @@ export function WalletProvider({ children }) {
   const [freighterAddr, setFreighterAddr]       = useState(null)
   const [freighterLoading, setFreighterLoading] = useState(false)
   const [freighterError, setFreighterError]     = useState(null)
+  const [freighterMissing, setFreighterMissing] = useState(false)
 
   const acceslyAddress = wallet?.stellarAddress ?? null
 
@@ -40,10 +41,11 @@ export function WalletProvider({ children }) {
   const connectFreighter = useCallback(async () => {
     setFreighterLoading(true)
     setFreighterError(null)
+    setFreighterMissing(false)
     try {
       const { isConnected } = await freighterIsConnected()
       if (!isConnected) {
-        setFreighterError('Freighter no está instalado. Agrega la extensión al navegador.')
+        setFreighterMissing(true)
         return
       }
       await freighterRequestAccess()
@@ -60,6 +62,11 @@ export function WalletProvider({ children }) {
   const disconnectFreighter = useCallback(() => {
     setFreighterAddr(null)
     setFreighterError(null)
+    setFreighterMissing(false)
+  }, [])
+
+  const dismissFreighterMissing = useCallback(() => {
+    setFreighterMissing(false)
   }, [])
 
   /* ── Firma unificada: ambas vías devuelven { signedXdr } ── */
@@ -87,8 +94,10 @@ export function WalletProvider({ children }) {
       freighterAddr,
       freighterLoading,
       freighterError,
+      freighterMissing,
       connectFreighter,
       disconnectFreighter,
+      dismissFreighterMissing,
       // Accesly passthrough
       connectAccesly,
       acceslyLoading,
