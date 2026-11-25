@@ -1933,3 +1933,91 @@ h2 {
   font-weight: 600;
   font-size: 0.95rem;
 }
+
+/* ─────────────────────────────────────────
+   OFFER TEMPLATES (CreateOfferModal)
+───────────────────────────────────────── */
+.offer-templates-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.offer-templates-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.offer-templates-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.offer-template-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.6rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.offer-template-chip:hover {
+  border-color: rgba(212, 166, 71, 0.45);
+}
+
+.offer-template-chip--active {
+  background: var(--gold-dim);
+  border-color: rgba(212, 166, 71, 0.55);
+}
+
+.offer-template-chip-title {
+  font-weight: 600;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.offer-template-chip-amount {
+  color: var(--gold-light);
+  font-size: 0.75rem;
+}
+
+.offer-template-chip-del {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 0 0.15rem;
+}
+
+.offer-template-chip-del:hover {
+  color: #f87171;
+}
+
+.offer-select {
+  width: 100%;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
