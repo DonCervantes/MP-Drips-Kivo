@@ -6,6 +6,11 @@ export const translations = {
       myEscrows: 'Mis Escrows',
       disconnectFreighter: 'Desconectar Freighter',
       connectFreighter: 'Conectar Freighter',
+      noExtensionTitle: 'No se detectó la extensión de Freighter',
+      noExtensionBody: 'En móvil no existe extensión de navegador. Abre Freighter Mobile o continúa con Accesly (sin extensión).',
+      openFreighterMobile: 'Abrir Freighter Mobile',
+      useAccesly: 'Usar Accesly',
+      connectingAccesly: 'Conectando...',
     },
 
     // Hero
@@ -281,6 +286,11 @@ export const translations = {
       myEscrows: 'My Escrows',
       disconnectFreighter: 'Disconnect Freighter',
       connectFreighter: 'Connect Freighter',
+      noExtensionTitle: 'Freighter extension not detected',
+      noExtensionBody: 'Browser extensions are not available on mobile. Open Freighter Mobile or continue with Accesly.',
+      openFreighterMobile: 'Open Freighter Mobile',
+      useAccesly: 'Use Accesly',
+      connectingAccesly: 'Connecting...',
     },
 
     hero: {
@@ -543,6 +553,11 @@ export const translations = {
       myEscrows: 'Meus Escrows',
       disconnectFreighter: 'Desconectar Freighter',
       connectFreighter: 'Conectar Freighter',
+      noExtensionTitle: 'Extensão Freighter não detectada',
+      noExtensionBody: 'Extensões de navegador não funcionam no celular. Abra o Freighter Mobile ou continue com Accesly.',
+      openFreighterMobile: 'Abrir Freighter Mobile',
+      useAccesly: 'Usar Accesly',
+      connectingAccesly: 'Conectando...',
     },
 
     hero: {

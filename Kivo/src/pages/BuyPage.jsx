@@ -3,6 +3,7 @@ import { ConnectButton } from 'accesly'
 import { useWallet } from '../context/WalletContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useEscrowFlow } from '../hooks/useEscrowFlow'
+import { FreighterFallbackBanner } from '../components/FreighterFallbackBanner'
 
 function shortenAddress(addr) {
   if (!addr) return ''
@@ -33,8 +34,12 @@ export function BuyPage() {
     connectFreighter,
     freighterLoading,
     freighterAddr,
+    freighterError,
+    acceslyError,
     disconnectFreighter,
   } = useWallet()
+
+  const walletError = acceslyError || freighterError
 
   const { createEscrow, loading, error, result } = useEscrowFlow()
 
@@ -115,7 +120,7 @@ export function BuyPage() {
             <div className="flow-step"><span className="flow-n">3</span> {b.step3}</div>
           </div>
 
-          {error && <div className="modal-error">{error}</div>}
+          {(error || walletError) && <div className="modal-error">{error || walletError}</div>}
 
           {walletAddress ? (
             <>
@@ -137,13 +142,14 @@ export function BuyPage() {
             </>
           ) : (
             <div className="buy-connect-section">
-              <p style={{ color: 'var(--muted)', marginBottom: '1rem' }}>{b.connectHint}</p>
-              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <p className="buy-connect-hint">{b.connectHint}</p>
+              <div className="buy-connect-actions">
                 <button className="btn-connect-freighter" onClick={connectFreighter} disabled={freighterLoading}>
                   {freighterLoading ? <span className="spinner" /> : 'Freighter'}
                 </button>
                 <ConnectButton />
               </div>
+              <FreighterFallbackBanner inline />
             </div>
           )}
         </div>
