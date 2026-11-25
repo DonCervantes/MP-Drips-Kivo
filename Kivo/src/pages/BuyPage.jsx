@@ -3,6 +3,7 @@ import { ConnectButton } from 'accesly'
 import { useWallet } from '../context/WalletContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useEscrowFlow } from '../hooks/useEscrowFlow'
+import { EscrowReceiptCard } from '../components/EscrowReceiptCard'
 
 function shortenAddress(addr) {
   if (!addr) return ''
@@ -66,10 +67,19 @@ export function BuyPage() {
             <h2 style={{ marginBottom: '0.5rem' }}>{b.successTitle}</h2>
             <p style={{ color: 'var(--muted)', marginBottom: '1rem' }}>{b.successSub}</p>
             {result.contractId && (
-              <div className="contract-id-box">
-                <span className="contract-label">Contract ID</span>
-                <code className="contract-value">{result.contractId}</code>
-              </div>
+              <EscrowReceiptCard
+                type="created"
+                contractId={result.contractId}
+                title={title}
+                amount={amount}
+                symbol="USDC"
+                roles={{
+                  approver: walletAddress,
+                  serviceProvider: seller,
+                  receiver: seller,
+                  disputeResolver: resolver,
+                }}
+              />
             )}
             <div className="buy-flow-info" style={{ marginTop: '1.25rem' }}>
               <div className="flow-step"><span className="flow-n">1</span> {b.successStep1}</div>

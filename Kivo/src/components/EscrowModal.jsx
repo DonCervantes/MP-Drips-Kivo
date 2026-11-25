@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useEscrowFlow } from '../hooks/useEscrowFlow'
 import { useLanguage } from '../context/LanguageContext'
+import { EscrowReceiptCard } from './EscrowReceiptCard'
 
 function shortenAddress(addr) {
   if (!addr) return ''
@@ -41,10 +42,19 @@ export function EscrowModal({ walletAddress, onClose }) {
           <h3>{e.successTitle}</h3>
           <p className="modal-success-sub">{e.successSub}</p>
           {result.contractId ? (
-            <div className="contract-id-box">
-              <span className="contract-label">Contract ID</span>
-              <code className="contract-value">{result.contractId}</code>
-            </div>
+            <EscrowReceiptCard
+              type="created"
+              contractId={result.contractId}
+              title={form.title}
+              amount={form.amount}
+              symbol="USDC"
+              roles={{
+                approver: walletAddress,
+                serviceProvider: form.serviceProvider,
+                receiver: form.receiver || form.serviceProvider,
+                disputeResolver: form.disputeResolver,
+              }}
+            />
           ) : (
             <p className="modal-success-sub" style={{ color: 'var(--teal)' }}>
               {e.successPending}
