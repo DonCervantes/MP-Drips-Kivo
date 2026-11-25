@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { useWallet } from '../context/WalletContext'
 import { useLanguage } from '../context/LanguageContext'
+import { TTL_OPTIONS, DEFAULT_TTL_SECONDS, computeExp } from '../lib/offerExpiry'
 
 function shortenAddress(addr) {
   if (!addr) return ''
@@ -18,9 +19,11 @@ export function CreateOfferModal({ onClose }) {
     desc:     '',
     amount:   '',
     resolver: '',
+    ttl:      String(DEFAULT_TTL_SECONDS),
   })
 
   const [offerUrl, setOfferUrl] = useState(null)
+  const [offerExp, setOfferExp] = useState(null)
   const [copied,   setCopied]   = useState(false)
 
   function handleChange(ev) {
@@ -37,6 +40,10 @@ export function CreateOfferModal({ onClose }) {
     url.searchParams.set('lang',   lang)
     if (form.desc)     url.searchParams.set('desc',     form.desc)
     if (form.resolver) url.searchParams.set('resolver', form.resolver)
+    // When offer signing exists (#102), `exp` must go inside the signed payload.
+    const exp = computeExp(Date.now(), Number(form.ttl))
+    url.searchParams.set('exp', String(exp))
+    setOfferExp(exp)
     setOfferUrl(url.toString())
     setCopied(false)
   }
@@ -77,6 +84,10 @@ export function CreateOfferModal({ onClose }) {
               <div className="buy-detail-row">
                 <span className="buy-detail-label">{o.qrSeller}</span>
                 <code className="modal-wallet-addr">{shortenAddress(walletAddress)}</code>
+              </div>
+              <div className="buy-detail-row">
+                <span className="buy-detail-label">{o.qrExpires}</span>
+                <span style={{ color: 'var(--text)' }}>{new Date(offerExp * 1000).toLocaleString(lang)}</span>
               </div>
             </div>
 
@@ -190,6 +201,15 @@ export function CreateOfferModal({ onClose }) {
               value={form.resolver}
               onChange={handleChange}
             />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">{o.fieldTtl}</label>
+            <select name="ttl" value={form.ttl} onChange={handleChange}>
+              {TTL_OPTIONS.map(opt => (
+                <option key={opt.value} value={String(opt.value)}>{o[opt.key]}</option>
+              ))}
+            </select>
           </div>
         </div>
 
