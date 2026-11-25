@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useEscrowFlow } from '../hooks/useEscrowFlow'
 import { useLanguage } from '../context/LanguageContext'
+import { EscrowReceiptCard } from './EscrowReceiptCard'
 
 const ROLES_KEYS = ['approver', 'serviceProvider', 'releaseSigner', 'disputeResolver', 'receiver', 'platformAddress']
 
@@ -296,6 +297,18 @@ export function EscrowDetailModal({ escrow, walletAddress, onClose, onActionDone
             <span className="action-success-icon">✓</span>
             {actionLabels[actionDone]}
           </div>
+        )}
+
+        {/* ── Comprobante tras liberar ── */}
+        {(actionDone === 'released' || statusKey === 'released') && escrow.contractId && (
+          <EscrowReceiptCard
+            type="released"
+            contractId={escrow.contractId}
+            title={escrow.title}
+            amount={escrow.amount}
+            symbol={escrow.trustline?.symbol ?? 'USDC'}
+            roles={escrow.roles}
+          />
         )}
 
         {/* ── Error ── */}
