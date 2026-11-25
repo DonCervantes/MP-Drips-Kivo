@@ -3,6 +3,8 @@ import {
   useGetEscrowsFromIndexerBySigner,
   useGetEscrowsFromIndexerByRole,
 } from '@trustless-work/escrow/hooks'
+import { useNotifications } from '../context/NotificationContext'
+import { useLanguage } from '../context/LanguageContext'
 
 /**
  * Devuelve todos los escrows relacionados con walletAddress,
@@ -16,14 +18,20 @@ export function useMyEscrows() {
 
   const { getEscrowsBySigner } = useGetEscrowsFromIndexerBySigner()
   const { getEscrowsByRole }   = useGetEscrowsFromIndexerByRole()
+  const { syncEscrowStates }   = useNotifications()
+  const { t }                  = useLanguage()
 
   // Guardamos las funciones del SDK en refs para que useCallback no cambie
   // de referencia cada render (los hooks del SDK devuelven funciones nuevas
   // en cada render, lo que causaría un bucle infinito).
   const signerRef = useRef(getEscrowsBySigner)
   const roleRef   = useRef(getEscrowsByRole)
+  const syncRef   = useRef(syncEscrowStates)
+  const labelsRef = useRef(t.notifications)
   signerRef.current = getEscrowsBySigner
   roleRef.current   = getEscrowsByRole
+  syncRef.current   = syncEscrowStates
+  labelsRef.current = t.notifications
 
   const fetchEscrows = useCallback(async (walletAddress) => {
     if (!walletAddress) return
@@ -63,6 +71,7 @@ export function useMyEscrows() {
       })
 
       setEscrows(unique)
+      syncRef.current(unique, walletAddress, labelsRef.current)
     } catch (err) {
       setError(err?.message || 'Error al cargar los escrows.')
     } finally {

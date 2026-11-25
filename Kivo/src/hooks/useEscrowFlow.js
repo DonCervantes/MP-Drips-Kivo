@@ -8,6 +8,8 @@ import {
 } from '@trustless-work/escrow/hooks'
 import { useWallet } from '../context/WalletContext'
 import { useNetwork } from '../context/NetworkContext'
+import { useNotifications } from '../context/NotificationContext'
+import { useLanguage } from '../context/LanguageContext'
 
 const USDC_TESTNET = {
   symbol: 'USDC',
@@ -40,6 +42,9 @@ export function useEscrowFlow() {
 
   const { signTransaction } = useWallet()
   const { network } = useNetwork()
+  const { notify } = useNotifications()
+  const { t } = useLanguage()
+  const n = t.notifications
   const USDC = network === 'mainnet' ? USDC_MAINNET : USDC_TESTNET
 
   const { deployEscrow }            = useInitializeEscrow()
@@ -88,6 +93,13 @@ export function useEscrowFlow() {
       const contractId = txResult?.contractId || txResult?.data?.contractId || null
       const outcome = { contractId, status: txResult?.status }
       setResult(outcome)
+      notify({
+        type: 'escrow_created',
+        title: n.escrowCreatedTitle,
+        message: `${formData.title} · ${formData.amount} ${USDC.symbol}`,
+        dedupeKey: contractId ? `escrow_created:${contractId}` : null,
+        meta: { contractId },
+      })
       return outcome
     } catch (err) {
       const msg = extractError(err, 'Error desconocido al crear el escrow.')
@@ -112,6 +124,13 @@ export function useEscrowFlow() {
       const { signedXdr } = await signTransaction(unsignedTransaction)
       const txResult      = await sendTransaction(signedXdr)
       setResult({ funded: true, status: txResult?.status })
+      notify({
+        type: 'escrow_funded',
+        title: n.escrowFundedTitle,
+        message: `${amount} ${USDC.symbol} · ${contractId.slice(0, 10)}...`,
+        dedupeKey: `escrow_funded:${contractId}:${amount}`,
+        meta: { contractId },
+      })
     } catch (err) {
       const msg = extractError(err, 'Error al financiar el escrow.')
       setError(msg)
@@ -145,6 +164,13 @@ export function useEscrowFlow() {
       const { signedXdr } = await signTransaction(unsignedTransaction)
       const txResult      = await sendTransaction(signedXdr)
       setResult({ approved: true, status: txResult?.status })
+      notify({
+        type: 'escrow_approved',
+        title: n.escrowApprovedTitle,
+        message: `${contractId.slice(0, 10)}...`,
+        dedupeKey: `escrow_approved:${contractId}`,
+        meta: { contractId },
+      })
     } catch (err) {
       const msg = extractError(err, 'Error al aprobar el hito.')
       setError(msg)
@@ -168,6 +194,13 @@ export function useEscrowFlow() {
       const { signedXdr } = await signTransaction(unsignedTransaction)
       const txResult      = await sendTransaction(signedXdr)
       setResult({ released: true, status: txResult?.status })
+      notify({
+        type: 'escrow_released',
+        title: n.escrowReleasedTitle,
+        message: `${contractId.slice(0, 10)}...`,
+        dedupeKey: `escrow_released:${contractId}`,
+        meta: { contractId },
+      })
     } catch (err) {
       const msg = extractError(err, 'Error al liberar los fondos.')
       setError(msg)

@@ -17,6 +17,8 @@ import {
   KIVO_CUSTOMER_ID,
 } from '../services/etherfuse'
 import { useWallet } from '../context/WalletContext'
+import { useNotifications } from '../context/NotificationContext'
+import { useLanguage } from '../context/LanguageContext'
 
 const POLLING_INTERVAL_MS = 3_000
 const QUOTE_TTL_MS = 120_000
@@ -114,8 +116,34 @@ export function useRamp() {
 
   const walletIdCache = useRef({})
   const { walletAddress, signTransaction } = useWallet()
+  const { notify } = useNotifications()
+  const { t } = useLanguage()
+  const notifRef = useRef({ notify, labels: t.notifications })
+  notifRef.current = { notify, labels: t.notifications }
   const pollingRef    = useRef(null)
   const quoteTimerRef = useRef(null)
+
+  function emitRampCompleted(orderId) {
+    const { notify: push, labels } = notifRef.current
+    push({
+      type: 'ramp_completed',
+      title: labels.rampCompletedTitle,
+      message: orderId ? `Order ${orderId.slice(0, 8)}...` : '',
+      dedupeKey: orderId ? `ramp_completed:${orderId}` : null,
+      meta: { orderId },
+    })
+  }
+
+  function emitRampFailed(orderId, reason) {
+    const { notify: push, labels } = notifRef.current
+    push({
+      type: 'ramp_failed',
+      title: labels.rampFailedTitle,
+      message: reason || (orderId ? `Order ${orderId.slice(0, 8)}...` : ''),
+      dedupeKey: orderId ? `ramp_failed:${orderId}` : null,
+      meta: { orderId },
+    })
+  }
 
   // ── helpers ────────────────────────────────────────────────────────────────
 
@@ -138,11 +166,13 @@ export function useRamp() {
           setStatus('completed')
           stopPolling()
           localStorage.removeItem(LS_KEY)
+          emitRampCompleted(orderId)
         } else if (next === 'error') {
           setStatus('error')
           setError('La orden falló o fue cancelada.')
           stopPolling()
           localStorage.removeItem(LS_KEY)
+          emitRampFailed(orderId, 'La orden falló o fue cancelada.')
         } else {
           setStatus(next)
         }
@@ -174,7 +204,12 @@ export function useRamp() {
         const next = statusFromOrder(o)
         if (next === 'completed' || next === 'error') {
           setStatus(next)
-          if (next === 'error') setError('La orden falló o fue cancelada.')
+          if (next === 'completed') {
+            emitRampCompleted(saved.orderId)
+          } else {
+            setError('La orden falló o fue cancelada.')
+            emitRampFailed(saved.orderId, 'La orden falló o fue cancelada.')
+          }
           localStorage.removeItem(LS_KEY)
         } else {
           setStatus(next)
@@ -264,8 +299,10 @@ export function useRamp() {
       startPolling(o.orderId)
 
     } catch (err) {
-      setError(err?.message || 'Error desconocido al iniciar el onramp.')
+      const msg = err?.message || 'Error desconocido al iniciar el onramp.'
+      setError(msg)
       setStatus('error')
+      emitRampFailed(null, msg)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [walletAddress, signTransaction])
@@ -338,6 +375,7 @@ export function useRamp() {
         if (IS_DEV) {
           localStorage.removeItem(LS_KEY)
           setStatus('completed')
+          emitRampCompleted(o.orderId)
           return
         }
       }
@@ -346,8 +384,10 @@ export function useRamp() {
       startPolling(o.orderId)
 
     } catch (err) {
-      setError(err?.message || 'Error desconocido al iniciar el offramp.')
+      const msg = err?.message || 'Error desconocido al iniciar el offramp.'
+      setError(msg)
       setStatus('error')
+      emitRampFailed(null, msg)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [walletAddress, signTransaction])
