@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useEscrowFlow } from '../hooks/useEscrowFlow'
 import { useLanguage } from '../context/LanguageContext'
+import { ReputationModal } from './ReputationModal'
 
 const ROLES_KEYS = ['approver', 'serviceProvider', 'releaseSigner', 'disputeResolver', 'receiver', 'platformAddress']
 
@@ -66,6 +67,7 @@ export function EscrowDetailModal({ escrow, walletAddress, onClose, onActionDone
   const remaining      = Math.max(0, totalAmount - currentBalance)
   const [fundAmount, setFundAmount] = useState(String(remaining || totalAmount || ''))
   const [actionDone, setActionDone] = useState(null)
+  const [profileTarget, setProfileTarget] = useState(null)
 
   const statusKey   = getStatusKey(escrow)
   const statusEntry = d.statusLabels?.[statusKey] ?? { label: statusKey, color: 'status-active' }
@@ -149,6 +151,15 @@ export function EscrowDetailModal({ escrow, walletAddress, onClose, onActionDone
                   </div>
                   <code className="role-addr">{shorten(addr)}</code>
                   <span className="role-desc">{roleEntry.desc}</span>
+                  {addr && (key === 'approver' || key === 'serviceProvider') && (
+                    <button
+                      type="button"
+                      className="role-rep-link"
+                      onClick={() => setProfileTarget({ address: addr, role: key === 'approver' ? 'buyer' : 'seller' })}
+                    >
+                      {t.reputation?.viewProfile || 'Ver perfil →'}
+                    </button>
+                  )}
                 </div>
               )
             })}
@@ -302,6 +313,14 @@ export function EscrowDetailModal({ escrow, walletAddress, onClose, onActionDone
         {error && <div className="modal-error">{error}</div>}
 
       </div>
+
+      {profileTarget && (
+        <ReputationModal
+          walletAddress={profileTarget.address}
+          initialRole={profileTarget.role}
+          onClose={() => setProfileTarget(null)}
+        />
+      )}
     </div>
   )
 }
